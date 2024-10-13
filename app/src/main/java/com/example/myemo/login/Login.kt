@@ -1,17 +1,14 @@
 package com.example.myemo.login
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,6 +24,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import com.example.myemo.R
 import com.example.myemo.components.HeaderText
 import com.example.myemo.components.LoginTextField
@@ -34,37 +33,29 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun Login(onLoginClick: (String?) -> Unit, onSignUpClick: () -> Unit) {
-    val (email, setEmail) = rememberSaveable {
-        mutableStateOf("")
-    }
-    val (password, setPassword) = rememberSaveable {
-        mutableStateOf("")
-    }
-    val isFieldsEmpty = email.isNotEmpty() && password.isNotEmpty()
+    val (email, setEmail) = rememberSaveable { mutableStateOf("") }
+    val (password, setPassword) = rememberSaveable { mutableStateOf("") }
+    val isFieldsNotEmpty = email.isNotEmpty() && password.isNotEmpty()
     var passwordVisible by remember { mutableStateOf(false) }
     var isLoginFail by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    // Biến để kiểm tra email và password có rỗng hay không
+    var isEmailEmpty by remember { mutableStateOf(false) }
+    var isPasswordEmpty by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        Color(0xFFFFFFFF), // Trắng
-                        Color(0xFFededfe), // Tím nhạt
-                        Color(0xFFd7ddfe), // Xanh nhạt
-                        Color(0xFFbcccff), // Xanh nhạt hơn
-                        Color(0xFF99c1ff), // Xanh dương nhạt
-                        Color(0xFF96befc), // Xanh dương
-                        Color(0xFF92baf8), // Xanh dương đậm hơn
-                        Color(0xFF8fb7f5), // Xanh đậm
-                        Color(0xFFaabcec), // Xanh đậm vừa
-                        Color(0xFFbdc3e4), // Xám nhạt
-                        Color(0xFFcbcbdb), // Xám
-                        Color(0xFFd4d4d4)  // Xám sáng
+                        Color(0xFFEDFCC4), // Màu đầu tiên
+                        Color(0xFFF2FDD0), // Màu thứ hai
+                        Color(0xFFF6FDDC), // Màu thứ ba
+                        Color(0xFFFAFEE9), // Màu thứ tư
+                        Color(0xFFFDFFF5)  // Màu cuối
                     ),
-                    start = Offset(0f, 0f),  // Điểm bắt đầu từ góc trái trên
-                    end = Offset(1000f, 1000f) // Điểm kết thúc ở góc phải dưới
+                    start = Offset(0f, 1000f),  // Bắt đầu từ dưới lên
+                    end = Offset(0f, 0f)  // Kết thúc ở trên
                 )
             ),
         contentAlignment = Alignment.Center
@@ -73,156 +64,146 @@ fun Login(onLoginClick: (String?) -> Unit, onSignUpClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
         ) {
-            HeaderText(
-                text = "Login",
-                modifier = Modifier.padding(vertical = 16.dp)
-                    .align(alignment = Alignment.Start)
-            )
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HeaderText(
+                    text = "Sign In to",
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Inner Space",
+                    fontSize = 30.sp,
+                    style = MaterialTheme.typography.displaySmall,
+                    color = Color.Blue
+                )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Email Field
             LoginTextField(
                 value = email,
                 onValueChange = setEmail,
                 labelText = "Email",
-                leadingIcon = Icons.Default.Email,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .height(60.dp)
+                    .width(250.dp),
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            AnimatedVisibility(isEmailEmpty) {
+                Text(
+                    "Email is not fill!",
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Password Field
             LoginTextField(
                 value = password,
                 onValueChange = setPassword,
                 labelText = "Password",
-                leadingIcon = Icons.Default.Lock,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .height(60.dp)
+                    .width(250.dp),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val icon = if (passwordVisible) {
-                        Icons.Default.Check
+                        painterResource(id = R.drawable.ic_action_visibility_black)
                     } else {
-                        Icons.Default.Close
+                        painterResource(id = R.drawable.ic_action_visibility_off_black)
                     }
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = icon, contentDescription = null)
+                        Icon(painter = icon, contentDescription = null)
                     }
                 },
                 keyboardType = KeyboardType.Password
             )
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            AnimatedVisibility(isPasswordEmpty) {
+                Text(
+                    "Password is not fill!",
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Login Button
             Button(
+                modifier = Modifier
+                    .height(50.dp)
+                    .width(250.dp)
+                    .clip(RoundedCornerShape(20.dp)) // Bo góc trước khi thiết lập viền
+                    .border(
+                        2.dp,
+                        Color.Black,
+                        RoundedCornerShape(20.dp)
+                    ), // Viền màu đen với bo góc 20dp
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White // Nền trắng của button
+                ),
                 onClick = {
+                    // Kiểm tra các trường email và password
+                    isEmailEmpty = email.isEmpty()
+                    isPasswordEmpty = password.isEmpty()
+
                     // Xử lý đăng nhập tại đây
-                    FirebaseAuth.getInstance()
-                        .signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                // Đăng nhập thành công
-                                val user = FirebaseAuth.getInstance().currentUser
-                                user?.let {
-                                    Log.d("LoginScreen", "User: ${it.displayName}, ${it.email}")
-                                    onLoginClick(it.email)
-//                                Toast.makeText(context, "${it.displayName}, ${it.email}", Toast.LENGTH_LONG).show()
+                    if (isFieldsNotEmpty) {
+                        FirebaseAuth.getInstance()
+                            .signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    // Đăng nhập thành công
+                                    val user = FirebaseAuth.getInstance().currentUser
+                                    user?.let {
+                                        Log.d("LoginScreen", "User: ${it.displayName}, ${it.email}")
+                                        onLoginClick(it.email)
+                                    }
+                                } else {
+                                    isLoginFail = true
+                                    Log.d(
+                                        "SignInScreen",
+                                        "Sign In Failed: ${task.exception?.message}"
+                                    )
                                 }
-                            } else {
-                                // Đăng nhập thất bại
-//                                Toast.makeText(context, "Email or Password incorrect!", Toast.LENGTH_LONG).show()
-                                isLoginFail = true
                             }
-                        }
+                    }
                 },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = isFieldsEmpty
             ) {
-                Text("Login")
+                Text(
+                    "Log In",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 20.sp,
+                    color = Color.Black
+                )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+            Spacer(modifier = Modifier.height(8.dp))
             AnimatedVisibility(isLoginFail) {
                 Text(
                     "Email or Password incorrect!",
                     color = MaterialTheme.colorScheme.error,
                 )
             }
+            Spacer(modifier = Modifier.height(16.dp))
 
-            AlternativeLoginOptions(
-                onIconClick = { index ->
-                    when (index) {
-                        0 -> {
-                            Toast.makeText(context, "Instagram Login Click", Toast.LENGTH_SHORT).show()
-                        }
-
-                        1 -> {
-                            Toast.makeText(context, "Github Login Click", Toast.LENGTH_SHORT).show()
-
-                        }
-
-                        2 -> {
-                            Toast.makeText(context, "Google Login Click", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                },
-                onSignUpClick = onSignUpClick,
-                modifier = Modifier.fillMaxSize()
-                    .wrapContentSize(align = Alignment.BottomCenter)
-            )
-        }
-    }
-}
-
-@Composable
-fun AlternativeLoginOptions(
-    onIconClick: (index: Int) -> Unit,
-    onSignUpClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val iconList = listOf(
-        R.drawable.icon_instagram,
-        R.drawable.icon_github,
-        R.drawable.icon_google,
-    )
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Or Sign in With")
-        Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-            iconList.forEachIndexed { index, iconResId ->
-                Icon(
-                    painter = painterResource(iconResId),
-                    contentDescription = "alternative Login",
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable {
-                            onIconClick(index)
-                        }.clip(CircleShape)
+            Row {
+                Text(
+                    "Don't have an Account?",
+                    modifier = Modifier.align(Alignment.CenterVertically)
                 )
-                Spacer(Modifier.width(16.dp))
-            }
-        }
-        Spacer(Modifier.height(16.dp))
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Don't have an Account?")
-            Spacer(Modifier.height(16.dp))
-            TextButton(onClick = onSignUpClick) {
-                Text("Sign Up")
+                TextButton(
+                    onClick = onSignUpClick,
+                ) {
+                    Text("Sign Up")
+                }
             }
         }
     }
-
 }
-
-

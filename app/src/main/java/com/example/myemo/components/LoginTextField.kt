@@ -4,6 +4,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -23,7 +24,6 @@ fun LoginTextField(
     value:String,
     onValueChange:(String) -> Unit,
     labelText:String,
-    leadingIcon:ImageVector? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     trailingIcon: (@Composable (() -> Unit))? = null
@@ -32,16 +32,15 @@ fun LoginTextField(
         modifier = modifier,
         value = value,
         onValueChange = onValueChange,
-        label = { Text(labelText)},
+        label = { Text(labelText, style = MaterialTheme.typography.labelMedium)},
         singleLine = true,
-        leadingIcon = {if (leadingIcon != null) Icon(imageVector = leadingIcon,null)},
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         visualTransformation = visualTransformation,
         trailingIcon = trailingIcon,
         shape = RoundedCornerShape(30),
         colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = Color(0xFF99c1ff),
-            unfocusedBorderColor = Color.Gray
+            unfocusedBorderColor = Color.Gray,
         )
     )
 }
