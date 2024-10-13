@@ -62,18 +62,8 @@ fun MyEmoTheme(
             displayLarge = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_bold))),
             displayMedium = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_black))),
             displaySmall = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_blackitalic))),
-            headlineLarge = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_bold))),
-            headlineMedium = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
-            headlineSmall = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
-            titleLarge = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_bold))),
-            titleMedium = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
-            titleSmall = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
-            bodyLarge = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
-            bodyMedium = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
+            bodyMedium = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_mediumitalic))),
             bodySmall = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
-            labelLarge = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
-            labelMedium = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
-            labelSmall = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular)))
         ),
         content = content
     )

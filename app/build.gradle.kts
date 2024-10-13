@@ -71,13 +71,14 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     //navigation
-    implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation(libs.androidx.navigation.compose)
     //google firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation ("com.google.firebase:firebase-auth:22.0.0")
-    //
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore)
+    implementation (libs.firebase.auth)
+    //WorkManager
+    implementation (libs.androidx.work.runtime.ktx)
 
 
 }

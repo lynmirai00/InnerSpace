@@ -1,6 +1,7 @@
 package com.example.myemo
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
@@ -15,23 +16,35 @@ import com.example.myemo.mainpage.Account
 import com.example.myemo.mainpage.Dashboard
 import com.example.myemo.mainpage.Home
 import com.example.myemo.signup.SignUp
+import com.google.firebase.auth.FirebaseAuth
 
 sealed class Route(val path: String) {
-    object Login : Route("Login")
-    object SignUp : Route("SignUp")
-    object Dashboard : Route("SignUp")
-    object Account : Route("SignUp")
+    data object Login : Route("Login")
+    data object SignUp : Route("SignUp")
+    data object Dashboard : Route("Dashboard")
+    data object Account : Route("Account")
     data class Home(val email: String) : Route("Home?email=$email")
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MyNavigation(navHostController: NavHostController) {
+    val startDestination: String
+    val route: String
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    if (currentUser != null) {
+        startDestination = Route.Home(currentUser.email ?: "").path
+        route = "home_flow"
+        Log.d("MyNavigation", "Current user: ${currentUser.email}")
+    } else {
+        startDestination = Route.Login.path
+        route = "login_flow"
+    }
     NavHost(
         navController = navHostController,
-        startDestination = "login_flow",
+        startDestination = route,
     ) {
-        navigation(startDestination = Route.Login.path, route = "login_flow") {
+        navigation(startDestination = startDestination, route = route) {
             composable(route = Route.Login.path) {
                 Login(
                     onLoginClick = { email ->
@@ -68,40 +81,50 @@ fun MyNavigation(navHostController: NavHostController) {
                 Home(
                     email = email,
                     onNavigateToDashboard = {
-                        // Thực hiện điều hướng đến trang nhật ký ở đây
                         navHostController.navigateToSingleTop(Route.Dashboard.path)
                     },
                     onNavigateToAccount = {
-                        // Thực hiện điều hướng đến trang cài đặt tài khoản ở đây
                         navHostController.navigateToSingleTop(Route.Account.path)
                     }
                 )
             }
             composable(route = Route.Dashboard.path) {
                 Dashboard(
-                    onNavigateToHome = {
-                        // Thực hiện điều hướng đến trang nhật ký ở đây
-                        navHostController.navigate(Route.Home(it.toString()).path) {
-                            popUpTo("login_flow") { inclusive = true }
+                    onNavigateToHome = { email ->
+                        navHostController.navigate(Route.Home(email.toString()).path) {
+                            popUpTo(navHostController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     },
                     onNavigateToAccount = {
-                        // Thực hiện điều hướng đến trang cài đặt tài khoản ở đây
                         navHostController.navigateToSingleTop(Route.Account.path)
                     }
                 )
             }
             composable(route = Route.Account.path) {
                 Account(
-                    onNavigateToHome = {
-                        // Thực hiện điều hướng đến trang nhật ký ở đây
-                        navHostController.navigate(Route.Home(it.toString()).path) {
-                            popUpTo("login_flow") { inclusive = true }
+                    onNavigateToHome = { email ->
+                        navHostController.navigate(Route.Home(email.toString()).path) {
+                            popUpTo(navHostController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     },
                     onNavigateToDashboard = {
-                        // Thực hiện điều hướng đến trang cài đặt tài khoản ở đây
                         navHostController.navigateToSingleTop(Route.Dashboard.path)
+                    },
+                    onLogout = {
+                        FirebaseAuth.getInstance().signOut() // Đăng xuất người dùng
+                        navHostController.navigate(Route.Login.path) {
+                            popUpTo(navHostController.graph.findStartDestination().id) {
+                                inclusive = true
+                            }
+                        }
                     }
                 )
             }

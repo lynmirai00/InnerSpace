@@ -1,7 +1,6 @@
 package com.example.myemo.signup
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,12 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -41,14 +35,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myemo.R
@@ -56,6 +46,7 @@ import com.example.myemo.components.HeaderText
 import com.example.myemo.components.LoginTextField
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.firestore
 
 @Composable
@@ -131,7 +122,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                 onValueChange = onNameChange,
                 labelText = "Name",
                 modifier = Modifier
-                    .height(60.dp)
+                    .height(65.dp)
                     .width(250.dp),
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -149,7 +140,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                 onValueChange = onEmailChange,
                 labelText = "Email",
                 modifier = Modifier
-                    .height(60.dp)
+                    .height(65.dp)
                     .width(250.dp),
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -173,7 +164,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                 onValueChange = onPasswordChange,
                 labelText = "Password",
                 modifier = Modifier
-                    .height(60.dp)
+                    .height(65.dp)
                     .width(250.dp),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -209,7 +200,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                 onValueChange = onConfirmPasswordChange,
                 labelText = "Confirm Password",
                 modifier = Modifier
-                    .height(60.dp)
+                    .height(65.dp)
                     .width(250.dp),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -246,7 +237,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                     .width(250.dp)
                     .clip(RoundedCornerShape(20.dp)) // Bo góc trước khi thiết lập viền
                     .border(
-                        2.dp,
+                        1.dp,
                         Color.Black,
                         RoundedCornerShape(20.dp)
                     ), // Viền màu đen với bo góc 20dp
@@ -277,26 +268,35 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         val user = FirebaseAuth.getInstance().currentUser
-                                        val userData = hashMapOf(
-                                            "name" to name,
-                                            "email" to email,
-                                            "password" to password
-                                        )
-                                        user?.let {
-                                            Firebase.firestore.collection("users")
-                                                .document(it.uid)
-                                                .set(userData)
-                                                .addOnSuccessListener {
-                                                    // Navigate to main page
-                                                    onSignUpClick(email)
-                                                }
-                                                .addOnFailureListener { e ->
-                                                    Log.d(
-                                                        "SignUp",
-                                                        "Sign Up Failed: ${e.message}"
+                                        // Cập nhật displayName
+                                        val profileUpdates = UserProfileChangeRequest.Builder()
+                                            .setDisplayName(name) // Thiết lập displayName
+                                            .build()
+
+                                        user?.updateProfile(profileUpdates)
+                                            ?.addOnCompleteListener { updateTask ->
+                                                if (updateTask.isSuccessful) {
+                                                    // Lưu thông tin người dùng vào Firestore
+                                                    val userData = hashMapOf(
+                                                        "name" to name,
+                                                        "email" to email,
+                                                        // Không cần lưu password vào Firestore vì đã lưu trong Authentication
                                                     )
+                                                    Firebase.firestore.collection("users")
+                                                        .document(user.uid)
+                                                        .set(userData)
+                                                        .addOnSuccessListener {
+                                                            // Navigate to main page
+                                                            onSignUpClick(email)
+                                                        }
+                                                        .addOnFailureListener { e ->
+                                                            Log.d(
+                                                                "SignUp",
+                                                                "Sign Up Failed: ${e.message}"
+                                                            )
+                                                        }
                                                 }
-                                        }
+                                            }
                                     } else {
                                         isSignUpFail = true
                                         Log.d(
@@ -311,7 +311,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
             ) {
                 Text(
                     "Create Account",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     fontSize = 20.sp,
                     color = Color.Black
                 )

@@ -6,9 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -22,9 +19,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.example.myemo.R
 import com.example.myemo.components.HeaderText
@@ -93,7 +88,7 @@ fun Login(onLoginClick: (String?) -> Unit, onSignUpClick: () -> Unit) {
                 onValueChange = setEmail,
                 labelText = "Email",
                 modifier = Modifier
-                    .height(60.dp)
+                    .height(65.dp)
                     .width(250.dp),
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -111,7 +106,7 @@ fun Login(onLoginClick: (String?) -> Unit, onSignUpClick: () -> Unit) {
                 onValueChange = setPassword,
                 labelText = "Password",
                 modifier = Modifier
-                    .height(60.dp)
+                    .height(65.dp)
                     .width(250.dp),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -179,7 +174,7 @@ fun Login(onLoginClick: (String?) -> Unit, onSignUpClick: () -> Unit) {
             ) {
                 Text(
                     "Log In",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     fontSize = 20.sp,
                     color = Color.Black
                 )

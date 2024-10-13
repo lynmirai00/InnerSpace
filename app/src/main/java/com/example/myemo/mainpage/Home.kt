@@ -56,12 +56,9 @@ fun Home(
                 )
             )
     ) {
-
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
                 .verticalScroll(rememberScrollState()) // Cho phép cuộn trang nếu nội dung nhiều
         ) {
             // Phần chào
@@ -126,7 +123,7 @@ fun DiaryEntrySection() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(150.dp)
-                .background(Color.White)
+                .background(Color.White, RoundedCornerShape(10.dp))
                 .border(1.dp, Color.Gray, RoundedCornerShape(10.dp))
                 .padding(8.dp)
         ) {

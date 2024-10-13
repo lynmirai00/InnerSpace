@@ -32,7 +32,7 @@ fun LoginTextField(
         modifier = modifier,
         value = value,
         onValueChange = onValueChange,
-        label = { Text(labelText, style = MaterialTheme.typography.labelMedium)},
+        label = { Text(labelText, style = MaterialTheme.typography.bodySmall)},
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         visualTransformation = visualTransformation,
