@@ -77,11 +77,11 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        Color(0xFFEDFCC4), // Màu đầu tiên
-                        Color(0xFFF2FDD0), // Màu thứ hai
-                        Color(0xFFF6FDDC), // Màu thứ ba
-                        Color(0xFFFAFEE9), // Màu thứ tư
-                        Color(0xFFFDFFF5)  // Màu cuối
+                        Color(0xFFd1e9f6), // Màu đầu tiên
+                        Color(0xFFe0edfa), // Màu thứ hai
+                        Color(0xFFedf3fc), // Màu thứ ba
+                        Color(0xFFf7f8fd), // Màu thứ tư
+                        Color(0xFFffffff)  // Màu cuối
                     ),
                     start = Offset(0f, 0f),  // Bắt đầu từ dưới lên
                     end = Offset(1000f, 0f)  // Kết thúc ở trên

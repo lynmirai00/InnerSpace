@@ -12,9 +12,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.example.myemo.login.Login
-import com.example.myemo.mainpage.Account
-import com.example.myemo.mainpage.Dashboard
-import com.example.myemo.mainpage.Home
+import com.example.myemo.mainpage.account.Account
+import com.example.myemo.mainpage.dashboard.Dashboard
+import com.example.myemo.mainpage.home.Home
 import com.example.myemo.signup.SignUp
 import com.google.firebase.auth.FirebaseAuth
 

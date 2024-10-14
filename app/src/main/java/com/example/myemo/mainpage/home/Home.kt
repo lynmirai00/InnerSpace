@@ -1,11 +1,9 @@
-package com.example.myemo.mainpage
+package com.example.myemo.mainpage.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,10 +21,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import com.example.myemo.R
+import com.example.myemo.mainpage.ActionBar
 
 @Composable
 fun Home(
@@ -45,11 +39,11 @@ fun Home(
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        Color(0xFFEDFCC4), // Màu đầu tiên
-                        Color(0xFFF2FDD0), // Màu thứ hai
-                        Color(0xFFF6FDDC), // Màu thứ ba
-                        Color(0xFFFAFEE9), // Màu thứ tư
-                        Color(0xFFFDFFF5)  // Màu cuối
+                        Color(0xFFd1e9f6), // Màu đầu tiên
+                        Color(0xFFe0edfa), // Màu thứ hai
+                        Color(0xFFedf3fc), // Màu thứ ba
+                        Color(0xFFf7f8fd), // Màu thứ tư
+                        Color(0xFFffffff)  // Màu cuối
                     ),
                     start = Offset(0f, 1000f),  // Bắt đầu từ dưới lên
                     end = Offset(0f, 0f)  // Kết thúc ở trên
@@ -60,6 +54,7 @@ fun Home(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()) // Cho phép cuộn trang nếu nội dung nhiều
+                .padding(bottom = 80.dp) // Đặt khoảng trống cho ActionBar
         ) {
             // Phần chào
             GreetingSection(userName)
@@ -75,8 +70,14 @@ fun Home(
             DiaryEntrySection()
 
             Spacer(modifier = Modifier.weight(1f)) // Đẩy ActionBar xuống đáy
+        }
 
-            // Thanh điều hướng (ActionBar)
+        // Đặt ActionBar cố định ở dưới cùng
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter) // Cố định ActionBar ở dưới
+        ) {
             ActionBar(
                 onHomeClick = {}, // Đây là trang Home, nên không cần xử lý
                 onDashboardClick = onNavigateToDashboard,
