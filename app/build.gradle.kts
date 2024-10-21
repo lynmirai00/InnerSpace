@@ -79,6 +79,9 @@ dependencies {
     implementation (libs.firebase.auth)
     //WorkManager
     implementation (libs.androidx.work.runtime.ktx)
+    // CALENDAR
+    implementation (libs.calendar)
+
 
 
 }

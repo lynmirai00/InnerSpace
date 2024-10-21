@@ -1,14 +1,21 @@
 package com.example.myemo.mainpage.account
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -16,6 +23,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -35,6 +44,8 @@ import com.example.myemo.R
 import com.example.myemo.components.LoginTextField
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun ChangePasswordDialog(
@@ -232,4 +243,60 @@ fun ChangePasswordDialog(
             }
         }
     )
+}
+
+@Composable
+fun ChangePasswordButton(snackbarHostState: SnackbarHostState, scope: CoroutineScope) {
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
+
+    // Nút đổi mật khẩu
+    Box(
+        modifier = Modifier
+            .height(60.dp)
+            .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp)
+            .clip(RoundedCornerShape(20.dp)) // Đảm bảo hình dạng vuông
+            .background(Color.White) // Màu nền khi không nhấn
+            .clickable(onClick = { showChangePasswordDialog = true }) // Xử lý sự kiện nhấn
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(start = 20.dp),
+            verticalAlignment = Alignment.CenterVertically, // Căn giữa theo chiều dọc
+            horizontalArrangement = Arrangement.Start // Căn chỉnh về bên trái
+        ) {
+            Text(
+                "Change Password",
+                style = MaterialTheme.typography.bodySmall,
+                fontSize = 20.sp
+            )
+        }
+    }
+
+    if (showChangePasswordDialog) {
+        ChangePasswordDialog(
+            onConfirm = { newPassword ->
+                // Thực hiện kiểm tra mật khẩu mới
+                val user = FirebaseAuth.getInstance().currentUser
+                // Đổi mật khẩu
+                user?.updatePassword(newPassword)
+                    ?.addOnCompleteListener { updateTask ->
+                        if (updateTask.isSuccessful) {
+                            Log.d("ChangePassword", "Password updated successfully")
+                            // Hiển thị thông báo thành công, đóng dialog
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Password updated successfully")
+                            }
+                            showChangePasswordDialog = false
+                        } else {
+                            Log.e("ChangePassword", "Failed to update password", updateTask.exception)
+                            // Hiển thị thông báo lỗi
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Failed to update password")
+                            }
+                        }
+                    }
+            },
+            onDismiss = { showChangePasswordDialog = false }
+        )
+    }
 }

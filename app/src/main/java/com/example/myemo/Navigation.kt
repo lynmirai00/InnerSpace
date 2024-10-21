@@ -3,13 +3,13 @@ package com.example.myemo
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.example.myemo.login.Login
 import com.example.myemo.mainpage.account.Account
@@ -23,9 +23,10 @@ sealed class Route(val path: String) {
     data object SignUp : Route("SignUp")
     data object Dashboard : Route("Dashboard")
     data object Account : Route("Account")
-    data class Home(val email: String) : Route("Home?email=$email")
+    data object Home : Route("Home")
 }
 
+@ExperimentalMaterial3Api
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MyNavigation(navHostController: NavHostController) {
@@ -33,7 +34,7 @@ fun MyNavigation(navHostController: NavHostController) {
     val route: String
     val currentUser = FirebaseAuth.getInstance().currentUser
     if (currentUser != null) {
-        startDestination = Route.Home(currentUser.email ?: "").path
+        startDestination = Route.Home.path
         route = "home_flow"
         Log.d("MyNavigation", "Current user: ${currentUser.email}")
     } else {
@@ -49,7 +50,7 @@ fun MyNavigation(navHostController: NavHostController) {
                 Login(
                     onLoginClick = { email ->
                         email?.let {
-                            navHostController.navigate(Route.Home(it).path) {
+                            navHostController.navigate(Route.Home.path) {
                                 popUpTo("login_flow") { inclusive = true }
                             }
                         }
@@ -61,11 +62,9 @@ fun MyNavigation(navHostController: NavHostController) {
             }
             composable(route = Route.SignUp.path) {
                 SignUp(
-                    onSignUpClick = { email ->
-                        email?.let {
-                            navHostController.navigate(Route.Home(it).path) {
-                                popUpTo("login_flow") { inclusive = true }
-                            }
+                    onSignUpClick = {
+                        navHostController.navigate(Route.Home.path) {
+                            popUpTo("login_flow") { inclusive = true }
                         }
                     },
                     onLoginClick = {
@@ -73,13 +72,8 @@ fun MyNavigation(navHostController: NavHostController) {
                     }
                 )
             }
-            composable(
-                route = "Home?email={email}",
-                arguments = listOf(navArgument("email") { defaultValue = "" })
-            ) { navBackStackEntry ->
-                val email = navBackStackEntry.arguments?.getString("email") ?: ""
+            composable(route = Route.Home.path) {
                 Home(
-                    email = email,
                     onNavigateToDashboard = {
                         navHostController.navigateToSingleTop(Route.Dashboard.path)
                     },
@@ -90,8 +84,8 @@ fun MyNavigation(navHostController: NavHostController) {
             }
             composable(route = Route.Dashboard.path) {
                 Dashboard(
-                    onNavigateToHome = { email ->
-                        navHostController.navigate(Route.Home(email.toString()).path) {
+                    onNavigateToHome = {
+                        navHostController.navigate(Route.Home.path) {
                             popUpTo(navHostController.graph.findStartDestination().id) {
                                 saveState = true
                             }
@@ -106,8 +100,8 @@ fun MyNavigation(navHostController: NavHostController) {
             }
             composable(route = Route.Account.path) {
                 Account(
-                    onNavigateToHome = { email ->
-                        navHostController.navigate(Route.Home(email.toString()).path) {
+                    onNavigateToHome = {
+                        navHostController.navigate(Route.Home.path) {
                             popUpTo(navHostController.graph.findStartDestination().id) {
                                 saveState = true
                             }
@@ -141,3 +135,4 @@ fun NavController.navigateToSingleTop(route: String) {
         restoreState = true
     }
 }
+

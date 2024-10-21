@@ -1,37 +1,45 @@
+package com.example.myemo.mainpage.account
+
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.app.NotificationManager
 import android.app.NotificationChannel
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.myemo.R
 
 class ReminderReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        val channelId = "my_channel_id"
+        val notificationManager = context?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    override fun onReceive(context: Context, intent: Intent?) {
-        // Gửi thông báo
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        // Tạo Notification Channel nếu thiết bị là Android 8.0 trở lên
+        // Tạo NotificationChannel nếu chưa có
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                "reminder_channel",
+                channelId,
                 "Reminder Notifications",
-                NotificationManager.IMPORTANCE_HIGH
+                NotificationManager.IMPORTANCE_HIGH // Đảm bảo mức độ quan trọng là cao
             )
             notificationManager.createNotificationChannel(channel)
+            Log.d("ReminderReceiver", "Notification channel created")
         }
 
         // Tạo nội dung thông báo
-        val notification = NotificationCompat.Builder(context, "reminder_channel")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Emotion Reminder")
-            .setContentText("It's time to log your emotions.")
+        val notification = NotificationCompat.Builder(context, channelId)
+            .setContentTitle("Reminder")
+            .setContentText("This is your reminder!")
+            .setSmallIcon(R.drawable.user)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()
 
-        // Hiển thị thông báo
+        // Gửi thông báo
         notificationManager.notify(1, notification)
+        Log.d("ReminderReceiver", "Notification sent")
     }
 }
+
+
+

@@ -1,14 +1,11 @@
 package com.example.myemo.mainpage.account
 
-import ReminderReceiver
-import android.Manifest
-import android.app.Activity
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -23,17 +20,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import java.util.Calendar
 
 @Composable
 fun ReminderNotification(
     context: Context,
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
     reminderTime: String
 ) {
+    // Trạng thái của Switch
+    var isChecked by remember { mutableStateOf(false) }
+    // Lấy trạng thái đã lưu từ SharedPreferences khi mở màn hình
+    LaunchedEffect(Unit) {
+        isChecked = getReminderState(context)
+    }
+
     // Nút thông báo nhắc nhở
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -49,13 +49,14 @@ fun ReminderNotification(
             text = "Reminder Notifications",
             style = MaterialTheme.typography.bodySmall,
             fontSize = 20.sp,
-            modifier = Modifier.padding(start = 10.dp)
+            modifier = Modifier.padding(start = 20.dp)
         )
         // Switch bên phải
         Switch(
             checked = isChecked,
             onCheckedChange = { checked ->
-                onCheckedChange(checked)
+                isChecked = checked // Cập nhật trạng thái của Switch
+                saveReminderState(context, checked) // Lưu trạng thái
                 if (checked) {
                     scheduleReminder(context, reminderTime)
                 } else {
@@ -66,57 +67,74 @@ fun ReminderNotification(
                 checkedThumbColor = Color.Green, // Màu xanh khi bật
                 uncheckedThumbColor = Color.Gray // Màu xám khi tắt
             ),
-            modifier = Modifier.padding(end = 10.dp)
+            modifier = Modifier.padding(end = 20.dp)
         )
     }
 }
 
-private fun scheduleReminder(context: Context, reminderTime: String) {
-    // Chuyển đổi chuỗi thời gian thành giờ và phút
-    val (hour, minute) = reminderTime.split(":").map { it.toInt() }
+@SuppressLint("MissingPermission")
+fun scheduleReminder(context: Context, reminderTime: String) {
+    // Chuyển đổi chuỗi thời gian thành Calendar
+    val timeParts = reminderTime.split(":")
+    val hour = timeParts[0].toInt()
+    val minute = timeParts[1].toInt()
 
-    // Thiết lập AlarmManager
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val calendar = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.MINUTE, minute)
+        set(Calendar.SECOND, 0)
+    }
+
+    Log.d("ReminderNotification", "Scheduled reminder at $hour:$minute")
+
+    // Tạo Intent và PendingIntent để kích hoạt BroadcastReceiver
     val intent = Intent(context, ReminderReceiver::class.java)
-
-    // Sử dụng FLAG_IMMUTABLE khi tạo PendingIntent
     val pendingIntent = PendingIntent.getBroadcast(
-        context,
-        0,
-        intent,
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
-    // Tính thời gian để đặt nhắc nhở
-    val calendar = Calendar.getInstance()
-    calendar.set(Calendar.HOUR_OF_DAY, hour)
-    calendar.set(Calendar.MINUTE, minute)
-    calendar.set(Calendar.SECOND, 0)
-
-    // Thiết lập nhắc nhở
-    alarmManager.setInexactRepeating(
+    // Sử dụng AlarmManager để lên lịch
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    alarmManager.setExactAndAllowWhileIdle(
         AlarmManager.RTC_WAKEUP,
         calendar.timeInMillis,
-        AlarmManager.INTERVAL_DAY, // Lặp lại hàng ngày
         pendingIntent
     )
+    Log.d("ReminderNotification", "Alarm set for: ${calendar.time}")
 }
 
-
-private fun cancelReminder(context: Context) {
-    // Tạo Intent cho ReminderReceiver
+fun cancelReminder(context: Context) {
     val intent = Intent(context, ReminderReceiver::class.java)
-
-    // Thêm FLAG_IMMUTABLE vào PendingIntent
     val pendingIntent = PendingIntent.getBroadcast(
-        context,
-        0,
-        intent,
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
-    // Hủy nhắc nhở
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     alarmManager.cancel(pendingIntent)
+
+    Log.d("ReminderNotification", "Reminder cancelled")
+}
+
+// Thêm hàm để lưu trạng thái nhắc nhở
+fun saveReminderState(context: Context, isChecked: Boolean) {
+    val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+    with(sharedPreferences.edit()) {
+        putBoolean("reminder_state", isChecked)
+        apply()
+    }
+}
+
+// Hàm để lấy trạng thái nhắc nhở
+fun getReminderState(context: Context): Boolean {
+    val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+    return sharedPreferences.getBoolean("reminder_state", false) // Mặc định là false
+}
+
+// Khởi động nhắc nhở khi ứng dụng khởi động
+fun setupReminder(context: Context, reminderTime: String) {
+    val isChecked = getReminderState(context)
+    if (isChecked) {
+        scheduleReminder(context, reminderTime)
+    }
 }
 

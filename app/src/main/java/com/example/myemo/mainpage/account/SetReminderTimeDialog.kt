@@ -3,9 +3,14 @@ package com.example.myemo.mainpage.account
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Calendar
 
@@ -68,41 +73,40 @@ fun SetReminderTimeDialog(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("AutoboxingStateCreation")
 @Composable
 fun TimePicker(onTimeSelected: (Int, Int) -> Unit) {
-    // Sử dụng Calendar để lấy giờ và phút hiện tại
+    // Lấy giờ và phút hiện tại
     val calendar = Calendar.getInstance()
     var hour by remember { mutableStateOf(calendar.get(Calendar.HOUR_OF_DAY)) }
     var minute by remember { mutableStateOf(calendar.get(Calendar.MINUTE)) }
 
-    Column {
-        // Hiển thị Slider cho giờ
-        Text("Hour: $hour")
-        Slider(
-            value = hour.toFloat(),
-            onValueChange = { newHour ->
-                hour = newHour.toInt()
-                onTimeSelected(hour, minute) // Gọi hàm khi giờ được chọn
-            },
-            valueRange = 0f..23f, // Giới hạn giá trị từ 0 đến 23
-            steps = 22 // Cung cấp 23 bậc (0 đến 23)
-        )
+    // Tạo trạng thái cho TimePicker
+    val timePickerState = rememberTimePickerState(
+        initialHour = hour,
+        initialMinute = minute,
+        is24Hour = true
+    )
 
-        // Hiển thị Slider cho phút
-        Text("Minute: $minute")
-        Slider(
-            value = minute.toFloat(),
-            onValueChange = { newMinute ->
-                minute = newMinute.toInt()
-                onTimeSelected(hour, minute) // Gọi hàm khi phút được chọn
-            },
-            valueRange = 0f..59f, // Giới hạn giá trị từ 0 đến 59
-            steps = 58 // Cung cấp 59 bậc (0 đến 59)
+    // Cập nhật giá trị giờ và phút khi người dùng chọn
+    LaunchedEffect(timePickerState.hour, timePickerState.minute) {
+        hour = timePickerState.hour
+        minute = timePickerState.minute
+        onTimeSelected(hour, minute) // Truyền giá trị giờ và phút đã chọn
+    }
+
+    // Hiển thị TimeInput cho phép người dùng cuộn giờ và phút
+    Column (
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        TimeInput(
+            state = timePickerState
         )
     }
 }
-
 
 fun saveReminderTime(context: Context, time: String) {
     val sharedPreferences: SharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
