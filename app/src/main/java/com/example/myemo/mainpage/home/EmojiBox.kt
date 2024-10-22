@@ -1,35 +1,38 @@
 package com.example.myemo.mainpage.home
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import com.example.myemo.R
+import java.time.LocalDate
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EmojiBox(
-    showDialog: Boolean, // Truyền trạng thái hiển thị từ bên ngoài
-    onDismiss: () -> Unit, // Truyền callback khi hộp thoại bị tắt
-    onEmojiClick: (String) -> Unit // Hàm callback khi nhấn vào một emoji
+    showDialog: Boolean,
+    selectedDay: Int,
+    onDismiss: () -> Unit,
+    dayToEmojiMap: MutableMap<Int, String>, // Bản đồ lưu trữ cảm xúc của ngày
+    onEmojiClick: (String) -> Unit
 ) {
     if (showDialog) {
-        // Hộp thoại chỉ mở khi showDialog là true
         AlertDialog(
-            onDismissRequest = { onDismiss() }, // Đóng hộp thoại khi nhấn ra ngoài
+            onDismissRequest = { onDismiss() },
             title = {
                 Text(
                     "How are you feeling today?",
@@ -39,28 +42,47 @@ fun EmojiBox(
             },
             text = {
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Các biểu tượng cảm xúc
-                    EmojiItem(icon = R.drawable.happy, label = "Happy", onEmojiClick)
-                    EmojiItem(icon = R.drawable.neutral, label = "Neutral", onEmojiClick)
-                    EmojiItem(icon = R.drawable.bored, label = "Bored", onEmojiClick)
-                    EmojiItem(icon = R.drawable.sad, label = "Sad", onEmojiClick)
-                    EmojiItem(icon = R.drawable.angry, label = "Angry", onEmojiClick)
+                    // Khi người dùng nhấn vào một emoji, cập nhật cảm xúc cho ngày
+                    EmojiItem(icon = R.drawable.happy, label = "Happy", onEmojiClick = {
+                        dayToEmojiMap[selectedDay] = "Happy"
+                        onEmojiClick(it)
+                    }, Color(0xFFFFFAE6))
+                    EmojiItem(icon = R.drawable.neutral, label = "Neutral", onEmojiClick = {
+                        dayToEmojiMap[selectedDay] = "Neutral"
+                        onEmojiClick(it)
+                    }, Color(0xFFEAFBFE))
+                    EmojiItem(icon = R.drawable.bored, label = "Bored", onEmojiClick = {
+                        dayToEmojiMap[selectedDay] = "Bored"
+                        onEmojiClick(it)
+                    }, Color(0xFFEDEDED))
+                    EmojiItem(icon = R.drawable.sad, label = "Sad", onEmojiClick = {
+                        dayToEmojiMap[selectedDay] = "Sad"
+                        onEmojiClick(it)
+                    }, Color(0xFFB8D1F1))
+                    EmojiItem(icon = R.drawable.angry, label = "Angry", onEmojiClick = {
+                        dayToEmojiMap[selectedDay] = "Angry"
+                        onEmojiClick(it)
+                    }, Color(0xFFFFD5CD))
                 }
             },
-            confirmButton = {} // Không cần nút xác nhận
+            confirmButton = {} // Để trống nếu không cần
         )
     }
 }
 
 @Composable
-fun EmojiItem(icon: Int, label: String, onEmojiClick: (String) -> Unit) {
+fun EmojiItem(icon: Int, label: String, onEmojiClick: (String) -> Unit, color: Color) {
     Box(
         modifier = Modifier
+            .height(50.dp)
+            .width(50.dp)
             .padding(5.dp)
-            .clip(CircleShape)
+            .background(color, RoundedCornerShape(5.dp))
+            .clip(RoundedCornerShape(5.dp))
             .clickable(onClick = { onEmojiClick(label) }),
         contentAlignment = Alignment.Center
     ) {
@@ -71,5 +93,3 @@ fun EmojiItem(icon: Int, label: String, onEmojiClick: (String) -> Unit) {
         )
     }
 }
-
-

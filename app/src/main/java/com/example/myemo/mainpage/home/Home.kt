@@ -1,5 +1,6 @@
 package com.example.myemo.mainpage.home
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -28,6 +29,7 @@ import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import com.maxkeppeler.sheets.calendar.models.CalendarStyle
 import java.time.LocalDate
 
+@SuppressLint("MutableCollectionMutableState")
 @ExperimentalMaterial3Api
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -35,6 +37,9 @@ fun Home(
     onNavigateToDashboard: () -> Unit,
     onNavigateToAccount: () -> Unit
 ) {
+    // Biến trạng thái để lưu cảm xúc của mỗi ngày, dùng MutableMap để cập nhật cảm xúc
+    val dayToEmojiMap = remember { mutableStateOf(mutableMapOf<Int, String>()) }
+
     // Lấy thông tin người dùng hiện tại
     val selectedDate =
         remember { mutableStateOf<LocalDate?>(LocalDate.now()) } // Khởi tạo với ngày hôm nay
@@ -103,10 +108,13 @@ fun Home(
             // Hiển thị EmojiBox khi showEmojiBox là true
             EmojiBox(
                 showDialog = showEmojiBox.value,
+                selectedDay = selectedDate.value?.dayOfMonth ?: 0, // Lấy ngày đã chọn
                 onDismiss = { showEmojiBox.value = false }, // Ẩn EmojiBox khi nhấn ra ngoài
+                dayToEmojiMap = dayToEmojiMap.value, // Truyền bản đồ cảm xúc
                 onEmojiClick = { emoji ->
                     // Xử lý khi người dùng chọn cảm xúc
                     Log.d("Emoji", "Selected emoji: $emoji")
+                    dayToEmojiMap.value[selectedDate.value?.dayOfMonth ?: 0] = emoji
                     showEmojiBox.value = false // Ẩn EmojiBox sau khi chọn cảm xúc
                 }
             )
@@ -116,12 +124,21 @@ fun Home(
             Column(
                 modifier = Modifier.padding(8.dp)
             ) {
+                // Kiểm tra nếu đã chọn ngày và có cảm xúc tương ứng
+                val selectedDayEmoji = selectedDate.value?.let { day ->
+                    dayToEmojiMap.value[day.dayOfMonth] // Lấy biểu tượng cảm xúc cho ngày đã chọn
+                }
                 Text(
-                    text = "Write something on" + (selectedDate.value?.let { " ${it.dayOfMonth}-${it.monthValue}-${it.year}" }
-                        ?: " today"),
+                    text = selectedDayEmoji?.let { "Emotion: $it" } ?: "Emotion: Not selected",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 2.dp, bottom = 8.dp)
                 )
+                Text(
+                    text = "Write something on" + (selectedDate.value?.let { " ${it.dayOfMonth}-${it.monthValue}-${it.year}" } ?: " today"),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(start = 2.dp, bottom = 8.dp)
+                )
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
