@@ -85,13 +85,7 @@ fun MyNavigation(navHostController: NavHostController) {
             composable(route = Route.Dashboard.path) {
                 Dashboard(
                     onNavigateToHome = {
-                        navHostController.navigate(Route.Home.path) {
-                            popUpTo(navHostController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        navHostController.navigateToSingleTop(Route.Home.path)
                     },
                     onNavigateToAccount = {
                         navHostController.navigateToSingleTop(Route.Account.path)
@@ -101,13 +95,7 @@ fun MyNavigation(navHostController: NavHostController) {
             composable(route = Route.Account.path) {
                 Account(
                     onNavigateToHome = {
-                        navHostController.navigate(Route.Home.path) {
-                            popUpTo(navHostController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        navHostController.navigateToSingleTop(Route.Home.path)
                     },
                     onNavigateToDashboard = {
                         navHostController.navigateToSingleTop(Route.Dashboard.path)

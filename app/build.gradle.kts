@@ -81,7 +81,7 @@ dependencies {
     implementation (libs.androidx.work.runtime.ktx)
     // CALENDAR
     implementation (libs.calendar)
-
-
-
+    // Chart
+    implementation(libs.vico.compose)
+    implementation(libs.vico.core)
 }

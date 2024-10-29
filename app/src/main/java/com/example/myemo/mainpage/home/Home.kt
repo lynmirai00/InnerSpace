@@ -1,33 +1,43 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.myemo.mainpage.home
 
 import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myemo.R
 import com.example.myemo.mainpage.ActionBar
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarView
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
 import com.maxkeppeler.sheets.calendar.models.CalendarStyle
 import java.time.LocalDate
+
+data class DiaryEntry(
+    val email: String? = null,
+    val date: String? = null,
+    val emoji: String? = null,
+    val diary: String? = null
+)
 
 @SuppressLint("MutableCollectionMutableState")
 @ExperimentalMaterial3Api
@@ -37,31 +47,80 @@ fun Home(
     onNavigateToDashboard: () -> Unit,
     onNavigateToAccount: () -> Unit
 ) {
-    // Biến trạng thái để lưu cảm xúc của mỗi ngày, dùng MutableMap để cập nhật cảm xúc
-    val dayToEmojiMap = remember { mutableStateOf(mutableMapOf<Int, String>()) }
-
-    // Lấy thông tin người dùng hiện tại
-    val selectedDate =
-        remember { mutableStateOf<LocalDate?>(LocalDate.now()) } // Khởi tạo với ngày hôm nay
     val currentUser = FirebaseAuth.getInstance().currentUser
+    val db = FirebaseFirestore.getInstance()
+
+    // Biến trạng thái lưu cảm xúc và nhật ký mỗi ngày
+    val dayToEmojiMap = remember { mutableStateOf(mutableMapOf<Int, String>()) }
+    val diaryText = remember { mutableStateOf("") }
+
+    // Trạng thái ngày đã chọn
+    val selectedDate = remember { mutableStateOf<LocalDate?>(null) }
     val today = remember { LocalDate.now() }
 
-    // Danh sách các ngày không được chọn (nếu cần)
+    // Biến trạng thái hiển thị hộp thoại emoji
+    val showEmojiBox = remember { mutableStateOf(false) }
+
+    // Danh sách các ngày không được chọn
     val disabledDates = (1..36500).map { today.plusDays(it.toLong()) }
-    val showEmojiBox = remember { mutableStateOf(false) } // Biến để điều khiển hiển thị EmojiBox
+
+    val flowerImages = listOf(
+        R.drawable.flowers1,
+        R.drawable.flowers2,
+        R.drawable.flowers3,
+        R.drawable.flowers4,
+        R.drawable.flowers5,
+        R.drawable.flowers6,
+        R.drawable.flowers7,
+        R.drawable.flowers8,
+        R.drawable.flowers9,
+        R.drawable.flowers10,
+        R.drawable.flowers11,
+        R.drawable.flowers12,
+    ) // Thay các tên ảnh này bằng các tài nguyên hình ảnh thực tế của bạn
+
+    // Chọn ngẫu nhiên một hình ảnh từ danh sách
+    val randomImage = flowerImages.random()
+
+    // Tự động lưu nhật ký khi diaryText thay đổi
+    LaunchedEffect(diaryText.value) {
+        selectedDate.value?.let { date ->
+            saveDiaryEntry(date, dayToEmojiMap.value[date.dayOfMonth], diaryText.value)
+        }
+    }
+
+    // Lấy dữ liệu từ Firebase khi chọn ngày
+    LaunchedEffect(selectedDate.value) {
+        selectedDate.value?.let { date ->
+            val documentId = "${currentUser?.email}_${date}"
+            db.collection("diaryEntries").document(documentId).get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val entry = document.toObject<DiaryEntry>()
+                        entry?.let {
+                            dayToEmojiMap.value[date.dayOfMonth] = it.emoji ?: "Not selected"
+                            diaryText.value = it.diary ?: ""
+                        }
+                    } else {
+                        dayToEmojiMap.value[date.dayOfMonth] = "Not selected"
+                        diaryText.value = ""
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.w("Firestore", "Error getting document", e)
+                }
+        }
+    }
+
+    // Cấu hình Calendar
     val calendarSelection = CalendarSelection.Date(
-        withButtonView = false, // Ẩn các button
-        selectedDate = selectedDate.value, // Gán ngày đã chọn
+        withButtonView = false,
+        selectedDate = selectedDate.value,
         onSelectDate = { newDate ->
-            // Xử lý khi người dùng chọn ngày
             selectedDate.value = newDate
-            // Ví dụ: in ra ngày đã chọn
-            Log.d("Calendar", "Selected date: $newDate")
-            // Hiển thị EmojiBox khi chọn ngày
-            showEmojiBox.value = true // Hiển thị EmojiBox khi chọn ngày
+            showEmojiBox.value = true
         }
     )
-    val diaryText = remember { mutableStateOf("") } // Biến để lưu nội dung nhật ký
 
     Box(
         modifier = Modifier
@@ -71,22 +130,34 @@ fun Home(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 16.dp,
-                    bottom = 80.dp
-                ) // Đặt khoảng trống cho ActionBar
+                .padding(16.dp)
         ) {
-            // Hiển thị thông điệp chào
-            Text(
-                text = "Hello, ${currentUser?.displayName ?: "User"}! How are you feeling today?",
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = 20.sp,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(16.dp)
-            )
+            ) {
+                Text(
+                    text = "Hi, ${currentUser?.displayName ?: "User"}\nGive you some flowers today ",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 19.sp
+                )
 
-            // Hiển thị CalendarView ngay lập tức
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .height(50.dp)
+                        .width(50.dp)
+                        .padding(5.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = randomImage),
+                        contentDescription = "Flower",
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -101,40 +172,51 @@ fun Home(
                         yearSelection = true,
                         monthSelection = true,
                         style = CalendarStyle.MONTH,
-                        disabledDates = disabledDates, // Danh sách các ngày không được chọn
+                        disabledDates = disabledDates,
                     )
                 )
             }
-            // Hiển thị EmojiBox khi showEmojiBox là true
+
             EmojiBox(
                 showDialog = showEmojiBox.value,
-                selectedDay = selectedDate.value?.dayOfMonth ?: 0, // Lấy ngày đã chọn
-                onDismiss = { showEmojiBox.value = false }, // Ẩn EmojiBox khi nhấn ra ngoài
-                dayToEmojiMap = dayToEmojiMap.value, // Truyền bản đồ cảm xúc
+                selectedDay = selectedDate.value?.dayOfMonth ?: 0,
+                onDismiss = { showEmojiBox.value = false },
+                dayToEmojiMap = dayToEmojiMap.value,
                 onEmojiClick = { emoji ->
-                    // Xử lý khi người dùng chọn cảm xúc
-                    Log.d("Emoji", "Selected emoji: $emoji")
                     dayToEmojiMap.value[selectedDate.value?.dayOfMonth ?: 0] = emoji
-                    showEmojiBox.value = false // Ẩn EmojiBox sau khi chọn cảm xúc
+                    showEmojiBox.value = false
+                    saveDiaryEntry(selectedDate.value, emoji, diaryText.value)
                 }
             )
-            Spacer(modifier = Modifier.height(20.dp))
 
-            // Ô ghi nhật ký
             Column(
                 modifier = Modifier.padding(8.dp)
             ) {
-                // Kiểm tra nếu đã chọn ngày và có cảm xúc tương ứng
                 val selectedDayEmoji = selectedDate.value?.let { day ->
-                    dayToEmojiMap.value[day.dayOfMonth] // Lấy biểu tượng cảm xúc cho ngày đã chọn
+                    dayToEmojiMap.value[day.dayOfMonth]
+                }
+
+                when (val emojiResult =
+                    selectedDayEmoji?.let { getEmojiImageResourceAndColor(it) }) {
+                    is Pair<*, *> -> {
+                        val (iconResId, backgroundColor) = emojiResult as Pair<Int, Color>
+                        EmojiItem(
+                            icon = iconResId,
+                            label = selectedDayEmoji,
+                            onEmojiClick = { /* Không cần hành động khi xem cảm xúc đã chọn */ },
+                            color = backgroundColor
+                        )
+                    }
+
+                    is String -> Text(
+                        text = emojiResult,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 2.dp, bottom = 8.dp)
+                    )
                 }
                 Text(
-                    text = selectedDayEmoji?.let { "Emotion: $it" } ?: "Emotion: Not selected",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 2.dp, bottom = 8.dp)
-                )
-                Text(
-                    text = "Write something on" + (selectedDate.value?.let { " ${it.dayOfMonth}-${it.monthValue}-${it.year}" } ?: " today"),
+                    text = selectedDate.value?.let { "Tell me something on ${it.dayOfMonth}-${it.monthValue}-${it.year}" }
+                        ?: "Please select a date",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 2.dp, bottom = 8.dp)
                 )
@@ -142,12 +224,11 @@ fun Home(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp)
+                        .height(200.dp)
                         .background(Color.White, RoundedCornerShape(10.dp))
                         .border(1.dp, Color.White, RoundedCornerShape(10.dp))
                         .padding(10.dp)
                 ) {
-                    // Sử dụng BasicTextField để người dùng có thể nhập liệu
                     BasicTextField(
                         value = diaryText.value,
                         onValueChange = { newText -> diaryText.value = newText },
@@ -157,26 +238,69 @@ fun Home(
                             if (diaryText.value.isEmpty()) {
                                 Text("Start writing here...", color = Color.Gray)
                             }
-                            innerTextField() // Hiển thị nội dung nhập liệu
+                            innerTextField()
                         }
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f)) // Đẩy ActionBar xuống đáy
+            Spacer(modifier = Modifier.weight(1f))
         }
 
-        // Đặt ActionBar cố định ở dưới cùng
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter) // Cố định ActionBar ở dưới
+                .align(Alignment.BottomCenter)
         ) {
             ActionBar(
-                onHomeClick = {}, // Đây là trang Home, nên không cần xử lý
+                onHomeClick = {},
                 onDashboardClick = onNavigateToDashboard,
                 onAccountClick = onNavigateToAccount
             )
         }
+    }
+}
+
+// Hàm lưu nhật ký vào Firebase
+private fun saveDiaryEntry(date: LocalDate?, emoji: String?, diaryText: String) {
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val db = FirebaseFirestore.getInstance()
+
+    if (currentUser == null) {
+        Log.w("saveDiaryEntry", "User not logged in")
+        return
+    }
+
+    date?.let {
+        val documentId = "${currentUser.email}_${it}"
+
+        val diaryEntry = mapOf(
+            "email" to currentUser.email,
+            "date" to it.toString(),
+            "emoji" to (emoji ?: "Not selected"),
+            "diary" to diaryText
+        )
+
+        db.collection("diaryEntries")
+            .document(documentId)
+            .set(diaryEntry)
+            .addOnSuccessListener {
+                Log.d("Firestore", "DocumentSnapshot successfully written!")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error writing document", e)
+            }
+    }
+}
+
+// Hàm trả về Pair của resId và màu cho cảm xúc, hoặc chuỗi thông báo khi không có cảm xúc phù hợp
+fun getEmojiImageResourceAndColor(emoji: String): Any {
+    return when (emoji) {
+        "Happy" -> R.drawable.happy to Color(0xFFFFFAE6)   // Vàng cho cảm xúc vui vẻ
+        "Neutral" -> R.drawable.neutral to Color(0xFFEAFBFE) // Xám cho cảm xúc trung lập
+        "Bored" -> R.drawable.bored to Color(0xFFEDEDED)  // Xanh nhạt cho cảm xúc chán
+        "Sad" -> R.drawable.sad to Color(0xFFB8D1F1)  // Xanh đậm cho cảm xúc buồn
+        "Angry" -> R.drawable.angry to Color(0xFFFFD5CD)   // Đỏ cho cảm xúc giận dữ
+        else -> "Emotion not selected"                    // Chuỗi thông báo khi không có cảm xúc
     }
 }

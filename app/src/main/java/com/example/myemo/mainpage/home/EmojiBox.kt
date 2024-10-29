@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import com.example.myemo.R
-import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -35,7 +34,7 @@ fun EmojiBox(
             onDismissRequest = { onDismiss() },
             title = {
                 Text(
-                    "How are you feeling today?",
+                    "How are you feeling?",
                     fontSize = 20.sp,
                     style = MaterialTheme.typography.bodySmall
                 )

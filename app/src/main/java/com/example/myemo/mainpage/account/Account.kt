@@ -48,14 +48,18 @@ import kotlinx.coroutines.launch
 @Composable
 fun Account(
     onNavigateToDashboard: () -> Unit,
-    onNavigateToHome: (String?) -> Unit,
+    onNavigateToHome: () -> Unit,
     onLogout: () -> Unit,
 ) {
     val context = LocalContext.current // Lấy context
     val currentUser = FirebaseAuth.getInstance().currentUser
     var showChangeNameDialog by remember { mutableStateOf(false) }
     var showReminderTimeDialog by remember { mutableStateOf(false) }
-    var reminderTime by remember { mutableStateOf(getReminderTime(context) ?: "10:00") } // Giá trị mặc định
+    var reminderTime by remember {
+        mutableStateOf(
+            getReminderTime(context) ?: "10:00"
+        )
+    } // Giá trị mặc định
 
     // Ở phần UI chính, tạo SnackbarHostState và CoroutineScope
     val snackbarHostState = remember { SnackbarHostState() }
@@ -128,7 +132,9 @@ fun Account(
                         .padding(start = 20.dp, end = 20.dp)
                         .clip(RoundedCornerShape(20.dp)) // Đảm bảo hình dạng vuông
                         .background(Color.White) // Màu nền khi không nhấn
-                        .clickable(onClick = { showReminderTimeDialog = true }) // Xử lý sự kiện nhấn
+                        .clickable(onClick = {
+                            showReminderTimeDialog = true
+                        }) // Xử lý sự kiện nhấn
                 ) {
                     Row(
                         modifier = Modifier
@@ -347,7 +353,7 @@ fun Account(
                 .align(Alignment.BottomCenter) // Cố định ActionBar ở dưới
         ) {
             ActionBar(
-                onHomeClick = { onNavigateToHome(currentUser?.email ?: "innerspace@gmail.com") },
+                onHomeClick = onNavigateToHome,
                 onDashboardClick = onNavigateToDashboard,
                 onAccountClick = {}
             )
