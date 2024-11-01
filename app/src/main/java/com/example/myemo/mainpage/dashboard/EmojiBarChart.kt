@@ -28,6 +28,7 @@ import com.patrykandpatrick.vico.compose.common.fill
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
@@ -40,14 +41,11 @@ import java.util.Calendar
 import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun getCurrentMonthDays(): List<Int> {
-    val yearMonth = YearMonth.now()
+fun getDaysInMonth(year: Int, month: Int): List<Int> {
+    val yearMonth = YearMonth.of(year, month)
     val daysInMonth = yearMonth.lengthOfMonth()
     return (1..daysInMonth).toList()
 }
-
-@RequiresApi(Build.VERSION_CODES.O)
-private val x = getCurrentMonthDays()
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -57,12 +55,12 @@ internal fun EmotionBarChart(
     month: Int,
     modifier: Modifier
 ) {
+    val x = getDaysInMonth(year, month)
     val modelProducer = remember { CartesianChartModelProducer() }
 
     // Sử dụng `remember` để giữ dữ liệu sau khi lấy
     val emotionData = remember { mutableStateListOf<Int>() }
-    val isDataFetched =
-        remember { mutableStateOf(false) } // Kiểm soát xem dữ liệu đã được lấy hay chưa
+    val isDataFetched = remember(year, month) { mutableStateOf(false) }
 
     if (!isDataFetched.value) {
         // Chỉ gọi `getEmotionDataForMonth` nếu dữ liệu chưa được lấy
@@ -75,7 +73,7 @@ internal fun EmotionBarChart(
     }
 
     // Chỉ cập nhật biểu đồ khi có dữ liệu
-    LaunchedEffect(emotionData.toList()) {
+    LaunchedEffect(emotionData.toList(), year, month) {
         if (emotionData.isNotEmpty()) {
             withContext(Dispatchers.Default) {
                 modelProducer.runTransaction {
@@ -92,6 +90,19 @@ internal fun EmotionBarChart(
 
 @Composable
 private fun EmotionLineChart(modelProducer: CartesianChartModelProducer, modifier: Modifier) {
+    // Định nghĩa CartesianValueFormatter tùy chỉnh
+    val fixedValueFormatter = CartesianValueFormatter { _, value, _ ->
+        // Hiển thị văn bản tương ứng thay vì các số cụ thể
+        when (value.toInt()) {
+            1 -> "Angry"
+            2 -> "Sad"
+            3 -> "Bored"
+            4 -> "Neutral"
+            5 -> "Happy"
+            else -> " " // Nếu không thuộc khoảng trên, không hiển thị gì
+        }
+    }
+
     val marker = rememberMarker()
     var xValue by remember { mutableIntStateOf(5) } // Biến trạng thái cho vị trí marker
     val markerVisibilityListener = object : CartesianMarkerVisibilityListener {
@@ -125,11 +136,14 @@ private fun EmotionLineChart(modelProducer: CartesianChartModelProducer, modifie
             rememberLineCartesianLayer(
                 LineCartesianLayer.LineProvider.series(
                     LineCartesianLayer.rememberLine(
-                        remember { LineCartesianLayer.LineFill.single(fill(Color(0xffa485e0))) }
+                        remember { LineCartesianLayer.LineFill.single(fill(Color(0xffA2D2DF))) }
                     )
                 )
             ),
-            startAxis = VerticalAxis.rememberStart(),
+            startAxis = VerticalAxis.rememberStart(
+                valueFormatter = fixedValueFormatter,
+                itemPlacer = VerticalAxis.ItemPlacer.step({ 1.0 }),
+            ),
             bottomAxis =
             HorizontalAxis.rememberBottom(
                 guideline = null,
@@ -155,7 +169,7 @@ fun getEmotionDataForMonth(
 ) {
     val db = FirebaseFirestore.getInstance()
     val emotionData =
-        MutableList(getCurrentMonthDays().size) { 0 } // Tạo danh sách 31 ngày với giá trị mặc định là 0
+        MutableList(getDaysInMonth(year, month).size) { 0 }
 
     val startDate = Calendar.getInstance().apply {
         set(Calendar.YEAR, year)
@@ -190,11 +204,11 @@ fun getEmotionDataForMonth(
                     SimpleDateFormat("dd", Locale.getDefault()).format(dateFormat.parse(dateStr)!!)
                         .toInt() - 1
                 emotionData[dayIndex] += when (emoji) {
-                    "Happy" -> 1
-                    "Neutral" -> 2
+                    "Happy" -> 5
+                    "Neutral" -> 4
                     "Bored" -> 3
-                    "Sad" -> 4
-                    "Angry" -> 5
+                    "Sad" -> 2
+                    "Angry" -> 1
                     else -> 0
                 }
 

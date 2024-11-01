@@ -1,8 +1,10 @@
 package com.example.myemo.mainpage.dashboard
 
 import android.text.Layout
+import android.util.Log
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
@@ -40,14 +42,16 @@ internal fun rememberMarker(
             shadow =
             shadow(radius = LABEL_BACKGROUND_SHADOW_RADIUS_DP.dp, dy = LABEL_BACKGROUND_SHADOW_DY_DP.dp),
         )
-    val label =
-        rememberTextComponent(
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlignment = Layout.Alignment.ALIGN_CENTER,
-            padding = dimensions(8.dp, 4.dp),
-            background = labelBackground,
-            minWidth = TextComponent.MinWidth.fixed(40.dp),
-        )
+
+    // Tạo label với nội dung là chữ
+    val label = rememberTextComponent(
+        color = MaterialTheme.colorScheme.onSurface,
+        textAlignment = Layout.Alignment.ALIGN_CENTER,
+        padding = dimensions(8.dp, 4.dp),
+        background = labelBackground,
+        minWidth = TextComponent.MinWidth.fixed(40.dp),
+    )
+
     val indicatorFrontComponent =
         rememberShapeComponent(MaterialTheme.colorScheme.surface, CorneredShape.Pill)
     val indicatorCenterComponent = rememberShapeComponent(shape = CorneredShape.Pill)
@@ -64,6 +68,7 @@ internal fun rememberMarker(
             padding = dimensions(10.dp),
         )
     val guideline = rememberAxisGuidelineComponent()
+//    Log.d("MarkerValue", "Current label value: $labelPosition")
     return remember(label, labelPosition, indicator, showIndicator, guideline) {
         object :
             DefaultCartesianMarker(

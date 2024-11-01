@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myemo.R
 import com.example.myemo.mainpage.ActionBar
+import com.example.myemo.selectedBackgroundColor
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
@@ -125,7 +126,7 @@ fun Home(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFd1e9f6))
+            .background(selectedBackgroundColor.value)
     ) {
         Column(
             modifier = Modifier

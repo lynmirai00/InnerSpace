@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myemo.R
 import com.example.myemo.mainpage.ActionBar
+import com.example.myemo.selectedBackgroundColor
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
@@ -83,16 +84,16 @@ fun Account(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFd1e9f6))
+                    .background(selectedBackgroundColor.value)
                     .offset(y = (-75).dp)
             ) {
                 Box(
                     modifier = Modifier
                         .size(150.dp)
-                        .background(Color(0xFFd1e9f6), shape = RoundedCornerShape(75.dp))
+                        .background(selectedBackgroundColor.value, shape = RoundedCornerShape(75.dp))
                         .border(
                             8.dp,
-                            Color(0xFFd1e9f6),
+                            selectedBackgroundColor.value,
                             RoundedCornerShape(75.dp)
                         ) // Thêm viền tròn xung quanh ảnh đại diện
                 ) {
@@ -121,7 +122,7 @@ fun Account(
                 Spacer(modifier = Modifier.height(30.dp))
 
                 //Nut Today Message
-                TodayMessageDialog()
+                ChangeBackgroundColorDialog()
                 Spacer(modifier = Modifier.height(20.dp))
 
                 //Nut set thoi gian nhac nho

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
+import com.example.myemo.selectedBackgroundColor
 
 @Composable
 fun LoginTextField(
@@ -35,8 +36,8 @@ fun LoginTextField(
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.Transparent, // Màu nền khi focus
             unfocusedContainerColor = Color.Transparent, // Màu nền khi không focus
-            focusedIndicatorColor = Color(0xFF99c1ff), // Màu đường viền khi focus
-            unfocusedIndicatorColor = Color.Gray // Màu đường viền khi không focus
+            focusedIndicatorColor = selectedBackgroundColor.value, // Màu đường viền khi focus
+            unfocusedIndicatorColor = selectedBackgroundColor.value // Màu đường viền khi không focus
         )
     )
 }
