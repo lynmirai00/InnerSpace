@@ -24,9 +24,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.myemo.R
+import com.example.myemo.selectedBackgroundColor
 
 @Composable
 fun ActionBar(
+    currentPage: String, // Add this parameter to indicate the current page
     onHomeClick: () -> Unit,
     onDashboardClick: () -> Unit,
     onAccountClick: () -> Unit
@@ -68,7 +70,7 @@ fun ActionBar(
             Icon(
                 painter = painterResource(id = R.drawable.bar_chart), // Thay bằng icon nhật ký
                 contentDescription = "Dashboard",
-                tint = Color.Black
+                tint = if (currentPage == "Dashboard") selectedBackgroundColor.value else Color.Black // Change color if active
             )
         }
         Spacer(Modifier.width(20.dp))
@@ -84,7 +86,7 @@ fun ActionBar(
             Icon(
                 painter = painterResource(id = R.drawable.home), // Thay bằng icon home của cậu
                 contentDescription = "Home",
-                tint = Color.Black
+                tint = if (currentPage == "Home") selectedBackgroundColor.value else Color.Black
             )
         }
         Spacer(Modifier.width(20.dp))
@@ -100,7 +102,7 @@ fun ActionBar(
             Icon(
                 painter = painterResource(id = R.drawable.user), // Thay bằng icon account
                 contentDescription = "Account",
-                tint = Color.Black
+                tint = if (currentPage == "Account") selectedBackgroundColor.value else Color.Black // Change color if active
             )
         }
     }

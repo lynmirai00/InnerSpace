@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,7 +29,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.PopupProperties
 import com.example.myemo.R
 import com.example.myemo.mainpage.ActionBar
 import com.example.myemo.selectedBackgroundColor
@@ -57,6 +55,18 @@ fun Dashboard(
     // Trạng thái để hiển thị menu
     var yearMenuExpanded by remember { mutableStateOf(false) }
     var monthMenuExpanded by remember { mutableStateOf(false) }
+    val goodjobImages = listOf(
+        R.drawable.goodjob1,
+        R.drawable.goodjob2,
+        R.drawable.goodjob3,
+        R.drawable.goodjob4,
+        R.drawable.goodjob5,
+        R.drawable.goodjob6,
+        R.drawable.goodjob7
+    ) // Thay các tên ảnh này bằng các tài nguyên hình ảnh thực tế của bạn
+
+    // Chọn ngẫu nhiên một hình ảnh từ danh sách
+    val randomImage = goodjobImages.random()
 
     Box(
         modifier = Modifier
@@ -82,7 +92,7 @@ fun Dashboard(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Image(
-                    painter = painterResource(id = R.drawable.goodjob1), // chọn ảnh từ goodjobImages
+                    painter = painterResource(id = randomImage), // chọn ảnh từ goodjobImages
                     contentDescription = "Flower",
                     modifier = Modifier
                         .size(50.dp)
@@ -215,6 +225,7 @@ fun Dashboard(
                 .align(Alignment.BottomCenter)
         ) {
             ActionBar(
+                currentPage = "Dashboard",
                 onHomeClick = onNavigateToHome,
                 onDashboardClick = {},
                 onAccountClick = onNavigateToAccount

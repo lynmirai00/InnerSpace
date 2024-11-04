@@ -121,7 +121,7 @@ fun Account(
 
                 Spacer(modifier = Modifier.height(30.dp))
 
-                //Nut Today Message
+                // Nút thay đổi màu nền
                 ChangeBackgroundColorDialog()
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -354,6 +354,7 @@ fun Account(
                 .align(Alignment.BottomCenter) // Cố định ActionBar ở dưới
         ) {
             ActionBar(
+                currentPage = "Account",
                 onHomeClick = onNavigateToHome,
                 onDashboardClick = onNavigateToDashboard,
                 onAccountClick = {}

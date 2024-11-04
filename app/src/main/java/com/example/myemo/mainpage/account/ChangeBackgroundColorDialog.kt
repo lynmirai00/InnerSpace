@@ -3,13 +3,18 @@ package com.example.myemo.mainpage.account
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,7 +29,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.ui.unit.DpOffset
@@ -59,38 +63,55 @@ fun ChangeBackgroundColorDialog() {
             )
         }
         // DropdownMenu hiển thị danh sách màu
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .height(80.dp)
+                .fillMaxWidth()
+                .padding(start = 20.dp, end = 20.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .border(1.dp, Color.Gray, RoundedCornerShape(10.dp))
+                .background(Color.White),
+            offset = DpOffset(0.dp, 0.dp), // Điều chỉnh khoảng cách của menu nếu cần
+            shape = RoundedCornerShape(10.dp),
+            containerColor = selectedBackgroundColor.value,
+            shadowElevation = 0.dp, // Có thể điều chỉnh bóng mờ ở đây
+        ) {
+            val colors = listOf(
+                Color(0xFFFFE0E0),
+                Color(0xFFF7DFE7),
+                Color(0xFFFFE5D3),
+                Color(0xFFE1ECC8),
+                Color(0xFFDFF2EB),
+                Color(0xFFD1E9F6)
+            )
+
+            Row(
                 modifier = Modifier
-                    .height(250.dp)
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, end = 20.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color.Gray, RoundedCornerShape(10.dp))
-                    .background(Color.White),
-                offset = DpOffset(0.dp, 0.dp), // Điều chỉnh khoảng cách của menu nếu cần
-                shape = RoundedCornerShape(10.dp),
-                shadowElevation = 0.dp, // Có thể điều chỉnh bóng mờ ở đây
+                    .padding(8.dp)
+                    .horizontalScroll(rememberScrollState()), // Enable horizontal scrolling
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val colors = listOf(
-                    Color(0xFFD1E9F6), // Màu gốc
-                    Color(0xFFF6EACB), // Màu tím nhạt hơn
-                    Color(0xFFF1D3CE), // Màu tím rất nhạt
-                    Color(0xFFE1ECC8), // Màu vàng nhạt
-                    Color(0xFFEECAD5)  // Màu xanh lá nhạt
-                )
+                Spacer(modifier = Modifier.width(8.dp))
                 colors.forEach { color ->
                     DropdownMenuItem(
                         text = { Text(" ") },
-                        modifier = Modifier.background(color),
+                        modifier = Modifier
+                            .height(50.dp)
+                            .width(50.dp)
+                            .clip(CircleShape)
+                            .border(1.dp, Color.Gray, CircleShape)
+                            .background(color),
                         onClick = {
                             selectedBackgroundColor.value = color // Cập nhật màu nền
                             expanded = false
                         }
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
             }
+        }
     }
 }
 

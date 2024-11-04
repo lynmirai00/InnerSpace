@@ -254,6 +254,7 @@ fun Home(
                 .align(Alignment.BottomCenter)
         ) {
             ActionBar(
+                currentPage = "Home",
                 onHomeClick = {},
                 onDashboardClick = onNavigateToDashboard,
                 onAccountClick = onNavigateToAccount
