@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.example.myemo.mainpage.home
 
 import android.annotation.SuppressLint
@@ -17,30 +15,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myemo.PreferenceManager
 import com.example.myemo.R
 import com.example.myemo.mainpage.ActionBar
-import com.example.myemo.selectedBackgroundColor
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
-import com.maxkeppeker.sheets.core.models.base.rememberSheetState
-import com.maxkeppeler.sheets.calendar.CalendarView
-import com.maxkeppeler.sheets.calendar.models.CalendarConfig
-import com.maxkeppeler.sheets.calendar.models.CalendarSelection
-import com.maxkeppeler.sheets.calendar.models.CalendarStyle
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+import java.time.YearMonth
+import java.util.Calendar
 
-data class DiaryEntry(
-    val email: String? = null,
-    val date: String? = null,
-    val emoji: String? = null,
-    val diary: String? = null
-)
-
-@SuppressLint("MutableCollectionMutableState")
+@SuppressLint("MutableCollectionMutableState", "AutoboxingStateCreation")
 @ExperimentalMaterial3Api
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -49,21 +39,32 @@ fun Home(
     onNavigateToAccount: () -> Unit
 ) {
     val currentUser = FirebaseAuth.getInstance().currentUser
-    val db = FirebaseFirestore.getInstance()
+    val calendar = Calendar.getInstance()
 
     // Biến trạng thái lưu cảm xúc và nhật ký mỗi ngày
-    val dayToEmojiMap = remember { mutableStateOf(mutableMapOf<Int, String>()) }
+    var dayToEmojiMap by remember { mutableStateOf<Map<LocalDate, String>>(emptyMap()) }
     val diaryText = remember { mutableStateOf("") }
 
     // Trạng thái ngày đã chọn
     val selectedDate = remember { mutableStateOf<LocalDate?>(null) }
-    val today = remember { LocalDate.now() }
 
     // Biến trạng thái hiển thị hộp thoại emoji
     val showEmojiBox = remember { mutableStateOf(false) }
+    var selectedMonth by remember { mutableStateOf(calendar.get(Calendar.MONTH) + 1) }
+    var selectedYear by remember { mutableStateOf(calendar.get(Calendar.YEAR)) }
+    // Callback khi tháng được chọn
+    val onMonthSelected: (Int) -> Unit = { newMonth ->
+        // Xử lý khi tháng được chọn, ví dụ cập nhật UI hoặc gửi dữ liệu đến các phần khác
+        selectedMonth = newMonth
+        Log.d("Home", "Selected Month: $newMonth")
+    }
 
-    // Danh sách các ngày không được chọn
-    val disabledDates = (1..36500).map { today.plusDays(it.toLong()) }
+    // Callback khi năm được chọn
+    val onYearSelected: (Int) -> Unit = { newYear ->
+        // Xử lý khi năm được chọn
+        selectedYear = newYear
+        Log.d("Home", "Selected Year: $newYear")
+    }
 
     val flowerImages = listOf(
         R.drawable.flowers1,
@@ -82,51 +83,54 @@ fun Home(
 
     // Chọn ngẫu nhiên một hình ảnh từ danh sách
     val randomImage = flowerImages.random()
+    val context = LocalContext.current // Lấy context
+    val preferenceManager = remember { PreferenceManager(context) }
+    val backgroundColor = remember { mutableStateOf(Color(preferenceManager.getBackgroundColor())) }
 
     // Tự động lưu nhật ký khi diaryText thay đổi
     LaunchedEffect(diaryText.value) {
         selectedDate.value?.let { date ->
-            saveDiaryEntry(date, dayToEmojiMap.value[date.dayOfMonth], diaryText.value)
+            saveDiaryEntry(date, dayToEmojiMap[date], diaryText.value)
         }
+    }
+
+    // Tự động tải dữ liệu emoji khi ngày, tháng hoặc năm thay đổi
+    LaunchedEffect(selectedYear, selectedMonth) {
+        dayToEmojiMap = fetchEmojiData(currentUser?.email ?: "", selectedYear, selectedMonth)
+        diaryText.value = ""
     }
 
     // Lấy dữ liệu từ Firebase khi chọn ngày
     LaunchedEffect(selectedDate.value) {
-        selectedDate.value?.let { date ->
-            val documentId = "${currentUser?.email}_${date}"
-            db.collection("diaryEntries").document(documentId).get()
-                .addOnSuccessListener { document ->
-                    if (document.exists()) {
-                        val entry = document.toObject<DiaryEntry>()
-                        entry?.let {
-                            dayToEmojiMap.value[date.dayOfMonth] = it.emoji ?: "Not selected"
-                            diaryText.value = it.diary ?: ""
-                        }
-                    } else {
-                        dayToEmojiMap.value[date.dayOfMonth] = "Not selected"
-                        diaryText.value = ""
-                    }
+        val date = selectedDate.value
+        if (date != null && currentUser != null) {
+            val documentId = "${currentUser.email}_${date}"
+            try {
+                val document = FirebaseFirestore.getInstance()
+                    .collection("diaryEntries")
+                    .document(documentId)
+                    .get()
+                    .await()
+
+                if (document.exists()) {
+                    // Cập nhật trạng thái nhật ký
+                    diaryText.value = document.getString("diary") ?: ""
+                } else {
+                    // Nếu không có nhật ký, đặt giá trị trống
+                    diaryText.value = ""
                 }
-                .addOnFailureListener { e ->
-                    Log.w("Firestore", "Error getting document", e)
-                }
+            } catch (e: Exception) {
+                Log.e("DiaryLoadError", "Error loading diary for $date: ${e.message}", e)
+                diaryText.value = "" // Đặt lại giá trị trống trong trường hợp lỗi
+            }
         }
     }
 
-    // Cấu hình Calendar
-    val calendarSelection = CalendarSelection.Date(
-        withButtonView = false,
-        selectedDate = selectedDate.value,
-        onSelectDate = { newDate ->
-            selectedDate.value = newDate
-            showEmojiBox.value = true
-        }
-    )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(selectedBackgroundColor.value)
+            .background(backgroundColor.value)
     ) {
         Column(
             modifier = Modifier
@@ -159,67 +163,41 @@ fun Home(
                     )
                 }
             }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-                    .border(1.dp, Color.White, RoundedCornerShape(10.dp))
-                    .background(Color.White, RoundedCornerShape(10.dp)),
-            ) {
-                CalendarView(
-                    sheetState = rememberSheetState(),
-                    selection = calendarSelection,
-                    config = CalendarConfig(
-                        yearSelection = true,
-                        monthSelection = true,
-                        style = CalendarStyle.MONTH,
-                        disabledDates = disabledDates,
-                    )
-                )
-            }
+
+            CalendarBox(
+                month = selectedMonth,
+                year = selectedYear,
+                dayToEmojiMap = dayToEmojiMap,
+                onDaySelected = { day: LocalDate? ->
+                    selectedDate.value = day
+                    showEmojiBox.value = true
+                },
+                onMonthSelected = onMonthSelected,  // Truyền callback cho tháng
+                onYearSelected = onYearSelected     // Truyền callback cho năm
+            )
 
             EmojiBox(
                 showDialog = showEmojiBox.value,
-                selectedDay = selectedDate.value?.dayOfMonth ?: 0,
                 onDismiss = { showEmojiBox.value = false },
-                dayToEmojiMap = dayToEmojiMap.value,
                 onEmojiClick = { emoji ->
-                    dayToEmojiMap.value[selectedDate.value?.dayOfMonth ?: 0] = emoji
+                    val updatedMap = dayToEmojiMap.toMutableMap()
+                    updatedMap[selectedDate.value ?: LocalDate.now()] = emoji
+                    dayToEmojiMap = updatedMap // cập nhật trạng thái
+                    Log.d("EmojiLog", "Updated dayToEmojiMap: $dayToEmojiMap")
                     showEmojiBox.value = false
                     saveDiaryEntry(selectedDate.value, emoji, diaryText.value)
                 }
             )
 
-            Column(
-                modifier = Modifier.padding(8.dp)
-            ) {
-                val selectedDayEmoji = selectedDate.value?.let { day ->
-                    dayToEmojiMap.value[day.dayOfMonth]
-                }
+            Spacer(modifier = Modifier.height(10.dp))
 
-                when (val emojiResult =
-                    selectedDayEmoji?.let { getEmojiImageResourceAndColor(it) }) {
-                    is Pair<*, *> -> {
-                        val (iconResId, backgroundColor) = emojiResult as Pair<Int, Color>
-                        EmojiItem(
-                            icon = iconResId,
-                            label = selectedDayEmoji,
-                            onEmojiClick = { /* Không cần hành động khi xem cảm xúc đã chọn */ },
-                            color = backgroundColor
-                        )
-                    }
+            Column {
 
-                    is String -> Text(
-                        text = emojiResult,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 2.dp, bottom = 8.dp)
-                    )
-                }
                 Text(
                     text = selectedDate.value?.let { "Tell me something on ${it.dayOfMonth}-${it.monthValue}-${it.year}" }
                         ?: "Please select a date",
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 2.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 2.dp, bottom = 10.dp)
                 )
 
                 Box(
@@ -257,7 +235,8 @@ fun Home(
                 currentPage = "Home",
                 onHomeClick = {},
                 onDashboardClick = onNavigateToDashboard,
-                onAccountClick = onNavigateToAccount
+                onAccountClick = onNavigateToAccount,
+                backgroundColor = backgroundColor.value // Pass the selected color
             )
         }
     }
@@ -295,14 +274,40 @@ private fun saveDiaryEntry(date: LocalDate?, emoji: String?, diaryText: String) 
     }
 }
 
-// Hàm trả về Pair của resId và màu cho cảm xúc, hoặc chuỗi thông báo khi không có cảm xúc phù hợp
-fun getEmojiImageResourceAndColor(emoji: String): Any {
-    return when (emoji) {
-        "Happy" -> R.drawable.happy to Color(0xFFFFFAE6)   // Vàng cho cảm xúc vui vẻ
-        "Neutral" -> R.drawable.neutral to Color(0xFFEAFBFE) // Xám cho cảm xúc trung lập
-        "Bored" -> R.drawable.bored to Color(0xFFEDEDED)  // Xanh nhạt cho cảm xúc chán
-        "Sad" -> R.drawable.sad to Color(0xFFB8D1F1)  // Xanh đậm cho cảm xúc buồn
-        "Angry" -> R.drawable.angry to Color(0xFFFFD5CD)   // Đỏ cho cảm xúc giận dữ
-        else -> "Emotion not selected"                    // Chuỗi thông báo khi không có cảm xúc
+@RequiresApi(Build.VERSION_CODES.O)
+suspend fun fetchEmojiData(email: String, year: Int, month: Int): Map<LocalDate, String> {
+    val db = FirebaseFirestore.getInstance()
+    val collectionRef = db.collection("diaryEntries")
+    val result = mutableMapOf<LocalDate, String>()
+
+    try {
+        Log.d("fetchEmojiData", "Fetching data for email: $email, year: $year, month: $month")
+
+        val documents = collectionRef
+            .whereEqualTo("email", email)
+            .whereGreaterThanOrEqualTo("date", "$year-${month.toString().padStart(2, '0')}-01")
+            .whereLessThanOrEqualTo(
+                "date",
+                "$year-${month.toString().padStart(2, '0')}-${
+                    YearMonth.of(year, month).lengthOfMonth()
+                }"
+            )
+            .get()
+            .await()
+
+        for (document in documents) {
+            val date = LocalDate.parse(document.getString("date"))
+            val emoji = document.getString("emoji") ?: continue
+            result[date] = emoji
+
+            // Log từng entry lấy được
+            Log.d("fetchEmojiData", "Fetched entry: date=$date, emoji=$emoji")
+        }
+
+        Log.d("fetchEmojiData", "Completed fetching. Total entries: ${result.size}")
+    } catch (e: Exception) {
+        Log.e("fetchEmojiData", "Error fetching data: ${e.message}", e)
     }
+
+    return result
 }

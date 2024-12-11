@@ -1,6 +1,9 @@
 package com.example.myemo.mainpage.account
 
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,9 +41,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
+import com.example.myemo.PreferenceManager
 import com.example.myemo.R
 import com.example.myemo.mainpage.ActionBar
-import com.example.myemo.selectedBackgroundColor
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
@@ -65,6 +69,19 @@ fun Account(
     // Ở phần UI chính, tạo SnackbarHostState và CoroutineScope
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val preferenceManager = remember { PreferenceManager(context) }
+    val backgroundColor = remember { mutableStateOf(Color(preferenceManager.getBackgroundColor())) }
+    val selectedImageUri = remember { mutableStateOf(preferenceManager.getAvatarUri(currentUser?.email.toString())) }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            selectedImageUri.value = it.toString()
+            preferenceManager.saveAvatarUri(currentUser?.email.toString(), it.toString())
+            Log.d("AvatarDebug", "Current Avatar URI: ${selectedImageUri.value}")
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -84,22 +101,27 @@ fun Account(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(selectedBackgroundColor.value)
+                    .background(backgroundColor.value)
                     .offset(y = (-75).dp)
             ) {
                 Box(
                     modifier = Modifier
                         .size(150.dp)
-                        .background(selectedBackgroundColor.value, shape = RoundedCornerShape(75.dp))
+                        .background(backgroundColor.value, shape = RoundedCornerShape(75.dp))
                         .border(
                             8.dp,
-                            selectedBackgroundColor.value,
+                            backgroundColor.value,
                             RoundedCornerShape(75.dp)
                         ) // Thêm viền tròn xung quanh ảnh đại diện
+                        .clickable { launcher.launch("image/*") } // Mở thư viện ảnh khi nhấn
                 ) {
                     // Hiển thị ảnh đại diện
                     Image(
-                        painter = painterResource(id = R.drawable.a13), // Thay 'your_image' bằng tên ảnh trong res/drawable
+                        painter = if (selectedImageUri.value.isNotEmpty()) {
+                            rememberAsyncImagePainter(selectedImageUri.value)
+                        } else {
+                            painterResource(R.drawable.a13) // Hình mặc định
+                        },
                         contentDescription = "Avatar",
                         modifier = Modifier
                             .size(140.dp) // Kích thước ảnh nhỏ hơn kích thước Box (còn lại là viền)
@@ -122,7 +144,14 @@ fun Account(
                 Spacer(modifier = Modifier.height(30.dp))
 
                 // Nút thay đổi màu nền
-                ChangeBackgroundColorDialog()
+                ChangeBackgroundColorDialog(
+                    context = LocalContext.current,
+                    onBackgroundColorChanged = { newColor ->
+                        // Cập nhật màu nền ngay lập tức
+                        backgroundColor.value = Color(newColor)
+                        preferenceManager.saveBackgroundColor(newColor) // Lưu lại màu vào SharedPreferences
+                    }
+                )
                 Spacer(modifier = Modifier.height(20.dp))
 
                 //Nut set thoi gian nhac nho
@@ -231,7 +260,7 @@ fun Account(
                                                     )
                                                     // Đóng dialog sau khi cập nhật thành công
                                                     scope.launch {
-                                                        snackbarHostState.showSnackbar("Name updated successfully")
+                                                        snackbarHostState.showSnackbar("Name updated successfully \uD83C\uDF89")
                                                     }
                                                     showChangeNameDialog = false
                                                 } else {
@@ -357,7 +386,8 @@ fun Account(
                 currentPage = "Account",
                 onHomeClick = onNavigateToHome,
                 onDashboardClick = onNavigateToDashboard,
-                onAccountClick = {}
+                onAccountClick = {},
+                backgroundColor = backgroundColor.value // Pass the selected color
             )
         }
         // Đặt SnackbarHost trong UI

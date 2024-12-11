@@ -13,16 +13,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
+import com.example.myemo.PreferenceManager
 import com.example.myemo.R
 import com.example.myemo.components.HeaderText
 import com.example.myemo.components.LoginTextField
-import com.example.myemo.selectedBackgroundColor
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -35,11 +36,14 @@ fun Login(onLoginClick: (String?) -> Unit, onSignUpClick: () -> Unit) {
     // Biến để kiểm tra email và password có rỗng hay không
     var isEmailEmpty by remember { mutableStateOf(false) }
     var isPasswordEmpty by remember { mutableStateOf(false) }
+    val context = LocalContext.current // Lấy context
+    val preferenceManager = remember { PreferenceManager(context) }
+    val backgroundColor = remember { mutableStateOf(Color(preferenceManager.getBackgroundColor())) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(selectedBackgroundColor.value),
+            .background(backgroundColor.value),
         contentAlignment = Alignment.Center
     ) {
         Column(

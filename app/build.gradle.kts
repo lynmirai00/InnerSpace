@@ -79,9 +79,9 @@ dependencies {
     implementation (libs.firebase.auth)
     //WorkManager
     implementation (libs.androidx.work.runtime.ktx)
-    // CALENDAR
-    implementation (libs.calendar)
     // Chart
     implementation(libs.vico.compose)
     implementation(libs.vico.core)
+    //
+    implementation (libs.coil.compose)
 }

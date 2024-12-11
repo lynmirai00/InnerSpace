@@ -241,7 +241,8 @@ fun ChangePasswordDialog(
             ) {
                 Text("Cancel", color = MaterialTheme.colorScheme.primary)
             }
-        }
+        },
+        containerColor = Color.White // Đổi màu nền thành trắng
     )
 }
 
@@ -284,7 +285,7 @@ fun ChangePasswordButton(snackbarHostState: SnackbarHostState, scope: CoroutineS
                             Log.d("ChangePassword", "Password updated successfully")
                             // Hiển thị thông báo thành công, đóng dialog
                             scope.launch {
-                                snackbarHostState.showSnackbar("Password updated successfully")
+                                snackbarHostState.showSnackbar("Password updated successfully \uD83C\uDF89")
                             }
                             showChangePasswordDialog = false
                         } else {

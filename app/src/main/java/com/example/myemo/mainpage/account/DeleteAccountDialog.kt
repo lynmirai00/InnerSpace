@@ -75,7 +75,8 @@ fun DeleteAccountDialog(
                 ) {
                     Text("Cancel", color = MaterialTheme.colorScheme.primary)
                 }
-            }
+            },
+            containerColor = Color.White // Đổi màu nền thành trắng
         )
     }
 }

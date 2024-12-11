@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,14 +22,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.myemo.R
-import com.example.myemo.selectedBackgroundColor
 
 @Composable
 fun ActionBar(
     currentPage: String, // Add this parameter to indicate the current page
     onHomeClick: () -> Unit,
     onDashboardClick: () -> Unit,
-    onAccountClick: () -> Unit
+    onAccountClick: () -> Unit,
+    backgroundColor: Color // Add this parameter
 ) {
     Row(
         modifier = Modifier
@@ -70,7 +68,7 @@ fun ActionBar(
             Icon(
                 painter = painterResource(id = R.drawable.bar_chart), // Thay bằng icon nhật ký
                 contentDescription = "Dashboard",
-                tint = if (currentPage == "Dashboard") selectedBackgroundColor.value else Color.Black // Change color if active
+                tint = if (currentPage == "Dashboard") backgroundColor else Color.Black // Change color if active
             )
         }
         Spacer(Modifier.width(20.dp))
@@ -86,7 +84,7 @@ fun ActionBar(
             Icon(
                 painter = painterResource(id = R.drawable.home), // Thay bằng icon home của cậu
                 contentDescription = "Home",
-                tint = if (currentPage == "Home") selectedBackgroundColor.value else Color.Black
+                tint = if (currentPage == "Home") backgroundColor else Color.Black
             )
         }
         Spacer(Modifier.width(20.dp))
@@ -102,7 +100,7 @@ fun ActionBar(
             Icon(
                 painter = painterResource(id = R.drawable.user), // Thay bằng icon account
                 contentDescription = "Account",
-                tint = if (currentPage == "Account") selectedBackgroundColor.value else Color.Black // Change color if active
+                tint = if (currentPage == "Account") backgroundColor else Color.Black // Change color if active
             )
         }
     }

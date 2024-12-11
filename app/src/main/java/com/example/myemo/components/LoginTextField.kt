@@ -7,11 +7,14 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
-import com.example.myemo.selectedBackgroundColor
+import com.example.myemo.PreferenceManager
 
 @Composable
 fun LoginTextField(
@@ -23,6 +26,10 @@ fun LoginTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     trailingIcon: (@Composable (() -> Unit))? = null
 ){
+    val context = LocalContext.current // Lấy context
+    val preferenceManager = remember { PreferenceManager(context) }
+    val backgroundColor = remember { mutableStateOf(Color(preferenceManager.getBackgroundColor())) }
+
     OutlinedTextField(
         modifier = modifier,
         value = value,
@@ -36,8 +43,8 @@ fun LoginTextField(
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.Transparent, // Màu nền khi focus
             unfocusedContainerColor = Color.Transparent, // Màu nền khi không focus
-            focusedIndicatorColor = selectedBackgroundColor.value, // Màu đường viền khi focus
-            unfocusedIndicatorColor = selectedBackgroundColor.value // Màu đường viền khi không focus
+            focusedIndicatorColor = backgroundColor.value, // Màu đường viền khi focus
+            unfocusedIndicatorColor = backgroundColor.value // Màu đường viền khi không focus
         )
     )
 }

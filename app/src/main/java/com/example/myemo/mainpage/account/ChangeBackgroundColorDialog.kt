@@ -1,5 +1,6 @@
 package com.example.myemo.mainpage.account
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,12 +32,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.DpOffset
-import com.example.myemo.selectedBackgroundColor
+import com.example.myemo.PreferenceManager
 
 @Composable
-fun ChangeBackgroundColorDialog() {
+fun ChangeBackgroundColorDialog(context: Context, onBackgroundColorChanged: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    val preferenceManager = remember { PreferenceManager(context) }
+    var backgroundColor by remember {
+        mutableStateOf(Color(preferenceManager.getBackgroundColor()))
+    }
 
     // Nút hiển thị "Change Background Color"
     Box(
@@ -75,7 +81,7 @@ fun ChangeBackgroundColorDialog() {
                 .background(Color.White),
             offset = DpOffset(0.dp, 0.dp), // Điều chỉnh khoảng cách của menu nếu cần
             shape = RoundedCornerShape(10.dp),
-            containerColor = selectedBackgroundColor.value,
+            containerColor = backgroundColor,
             shadowElevation = 0.dp, // Có thể điều chỉnh bóng mờ ở đây
         ) {
             val colors = listOf(
@@ -104,8 +110,10 @@ fun ChangeBackgroundColorDialog() {
                             .border(1.dp, Color.Gray, CircleShape)
                             .background(color),
                         onClick = {
-                            selectedBackgroundColor.value = color // Cập nhật màu nền
-                            expanded = false
+                            onBackgroundColorChanged(color.toArgb())
+                            backgroundColor = color
+                            preferenceManager.saveBackgroundColor(color.toArgb())
+                            expanded = false // Đóng menu
                         }
                     )
                     Spacer(modifier = Modifier.width(8.dp))

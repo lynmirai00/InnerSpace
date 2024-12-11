@@ -25,13 +25,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myemo.PreferenceManager
 import com.example.myemo.R
 import com.example.myemo.mainpage.ActionBar
-import com.example.myemo.selectedBackgroundColor
+import com.example.myemo.mainpage.home.EmojiItem
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Calendar
 
@@ -67,11 +69,14 @@ fun Dashboard(
 
     // Chọn ngẫu nhiên một hình ảnh từ danh sách
     val randomImage = goodjobImages.random()
+    val context = LocalContext.current // Lấy context
+    val preferenceManager = remember { PreferenceManager(context) }
+    val backgroundColor = remember { mutableStateOf(Color(preferenceManager.getBackgroundColor())) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(selectedBackgroundColor.value),
+            .background(backgroundColor.value),
     ) {
         Column(
             modifier = Modifier
@@ -112,13 +117,56 @@ fun Dashboard(
                 Row(
                     modifier = Modifier.padding(start = 16.dp),
                 ) {
+                    // Chọn tháng
+                    Box(
+                        modifier = Modifier
+                            .height(40.dp)
+                            .width(120.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(1.dp, backgroundColor.value, RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .clickable { monthMenuExpanded = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = months[selectedMonth - 1],
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 15.sp
+                        )
+
+                        DropdownMenu(
+                            expanded = monthMenuExpanded,
+                            onDismissRequest = { monthMenuExpanded = false },
+                            modifier = Modifier
+                                .height(250.dp)
+                                .width(120.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .border(1.dp, backgroundColor.value, RoundedCornerShape(10.dp))
+                                .background(Color.White),
+                            offset = DpOffset(0.dp, 0.dp), // Điều chỉnh khoảng cách của menu nếu cần
+                            shape = RoundedCornerShape(10.dp),
+                            shadowElevation = 0.dp, // Có thể điều chỉnh bóng mờ ở đây
+                        ) {
+                            // Hiển thị các tháng
+                            months.forEachIndexed { index, month ->
+                                DropdownMenuItem(
+                                    text = { Text(month) },
+                                    onClick = {
+                                        selectedMonth = index + 1
+                                        monthMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
                     // Chọn năm
                     Box(
                         modifier = Modifier
                             .height(40.dp)
                             .width(120.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .border(1.dp, selectedBackgroundColor.value, RoundedCornerShape(10.dp))
+                            .border(1.dp, backgroundColor.value, RoundedCornerShape(10.dp))
                             .background(Color.White)
                             .clickable { yearMenuExpanded = true },
                         contentAlignment = Alignment.Center
@@ -136,7 +184,7 @@ fun Dashboard(
                                 .height(250.dp)
                                 .width(120.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .border(1.dp, selectedBackgroundColor.value, RoundedCornerShape(10.dp))
+                                .border(1.dp, backgroundColor.value, RoundedCornerShape(10.dp))
                                 .background(Color.White),
                             offset = DpOffset(0.dp, 0.dp), // Điều chỉnh khoảng cách của menu nếu cần
                             shape = RoundedCornerShape(10.dp),
@@ -156,49 +204,6 @@ fun Dashboard(
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
-
-                    // Chọn tháng
-                    Box(
-                        modifier = Modifier
-                            .height(40.dp)
-                            .width(120.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .border(1.dp, selectedBackgroundColor.value, RoundedCornerShape(10.dp))
-                            .background(Color.White)
-                            .clickable { monthMenuExpanded = true },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = months[selectedMonth - 1],
-                            style = MaterialTheme.typography.bodySmall,
-                            fontSize = 15.sp
-                        )
-
-                        DropdownMenu(
-                            expanded = monthMenuExpanded,
-                            onDismissRequest = { monthMenuExpanded = false },
-                            modifier = Modifier
-                                .height(250.dp)
-                                .width(120.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .border(1.dp, selectedBackgroundColor.value, RoundedCornerShape(10.dp))
-                                .background(Color.White),
-                            offset = DpOffset(0.dp, 0.dp), // Điều chỉnh khoảng cách của menu nếu cần
-                            shape = RoundedCornerShape(10.dp),
-                            shadowElevation = 0.dp, // Có thể điều chỉnh bóng mờ ở đây
-                        ) {
-                            // Hiển thị các tháng
-                            months.forEachIndexed { index, month ->
-                                DropdownMenuItem(
-                                    text = { Text(month) },
-                                    onClick = {
-                                        selectedMonth = index + 1
-                                        monthMenuExpanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -214,7 +219,6 @@ fun Dashboard(
                         .height(300.dp)
                 )
             }
-
             Spacer(modifier = Modifier.weight(1f))
         }
 
@@ -228,7 +232,8 @@ fun Dashboard(
                 currentPage = "Dashboard",
                 onHomeClick = onNavigateToHome,
                 onDashboardClick = {},
-                onAccountClick = onNavigateToAccount
+                onAccountClick = onNavigateToAccount,
+                backgroundColor = backgroundColor.value // Pass the selected color
             )
         }
     }

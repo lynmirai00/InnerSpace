@@ -19,14 +19,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import com.example.myemo.R
+import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EmojiBox(
     showDialog: Boolean,
-    selectedDay: Int,
     onDismiss: () -> Unit,
-    dayToEmojiMap: MutableMap<Int, String>, // Bản đồ lưu trữ cảm xúc của ngày
     onEmojiClick: (String) -> Unit
 ) {
     if (showDialog) {
@@ -47,28 +46,24 @@ fun EmojiBox(
                 ) {
                     // Khi người dùng nhấn vào một emoji, cập nhật cảm xúc cho ngày
                     EmojiItem(icon = R.drawable.happy, label = "Happy", onEmojiClick = {
-                        dayToEmojiMap[selectedDay] = "Happy"
-                        onEmojiClick(it)
+                        onEmojiClick("Happy")
                     }, Color(0xFFFFFAE6))
                     EmojiItem(icon = R.drawable.neutral, label = "Neutral", onEmojiClick = {
-                        dayToEmojiMap[selectedDay] = "Neutral"
-                        onEmojiClick(it)
+                        onEmojiClick("Neutral")
                     }, Color(0xFFEAFBFE))
                     EmojiItem(icon = R.drawable.bored, label = "Bored", onEmojiClick = {
-                        dayToEmojiMap[selectedDay] = "Bored"
-                        onEmojiClick(it)
+                        onEmojiClick("Bored")
                     }, Color(0xFFEDEDED))
                     EmojiItem(icon = R.drawable.sad, label = "Sad", onEmojiClick = {
-                        dayToEmojiMap[selectedDay] = "Sad"
-                        onEmojiClick(it)
+                        onEmojiClick("Sad")
                     }, Color(0xFFB8D1F1))
                     EmojiItem(icon = R.drawable.angry, label = "Angry", onEmojiClick = {
-                        dayToEmojiMap[selectedDay] = "Angry"
-                        onEmojiClick(it)
+                        onEmojiClick("Angry")
                     }, Color(0xFFFFD5CD))
                 }
             },
-            confirmButton = {} // Để trống nếu không cần
+            confirmButton = {}, // Để trống nếu không cần
+            containerColor = Color.White // Đổi màu nền thành trắng
         )
     }
 }
