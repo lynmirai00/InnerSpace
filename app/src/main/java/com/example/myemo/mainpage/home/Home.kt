@@ -24,7 +24,6 @@ import com.example.myemo.R
 import com.example.myemo.mainpage.ActionBar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.YearMonth
@@ -97,6 +96,7 @@ fun Home(
     // Tự động tải dữ liệu emoji khi ngày, tháng hoặc năm thay đổi
     LaunchedEffect(selectedYear, selectedMonth) {
         dayToEmojiMap = fetchEmojiData(currentUser?.email ?: "", selectedYear, selectedMonth)
+        selectedDate.value = null // Đặt lại ngày đã chọn để cập nhật dữ liệu mới
         diaryText.value = ""
     }
 

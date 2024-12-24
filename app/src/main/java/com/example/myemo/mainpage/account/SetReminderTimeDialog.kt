@@ -2,7 +2,7 @@ package com.example.myemo.mainpage.account
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myemo.PreferenceManager
+import com.google.firebase.auth.FirebaseAuth
 import java.util.Calendar
 
 @SuppressLint("DefaultLocale", "AutoboxingStateCreation")
@@ -27,11 +29,13 @@ fun SetReminderTimeDialog(
         // Biến để lưu thời gian đã chọn
         var hour by remember { mutableStateOf(0) }
         var minute by remember { mutableStateOf(0) }
+        val preferenceManager = remember { PreferenceManager(context) }
+        val currentUser = FirebaseAuth.getInstance().currentUser?.email.toString()
 
         // Lấy giờ nhắc nhở từ SharedPreferences khi mở hộp thoại
         LaunchedEffect(Unit) {
-            val savedTime = getReminderTime(context) // Lấy giá trị đã lưu
-            savedTime?.let {
+            val savedTime = preferenceManager.getReminderTime(currentUser) // Lấy giá trị đã lưu
+            savedTime.let {
                 val timeParts = it.split(":")
                 hour = timeParts[0].toInt()
                 minute = timeParts[1].toInt()
@@ -58,7 +62,8 @@ fun SetReminderTimeDialog(
                         // Chuyển đổi giờ và phút thành chuỗi
                         val time = String.format("%02d:%02d", hour, minute)
                         onTimeSet(time) // Gọi hàm để truyền thời gian đã chọn
-                        saveReminderTime(context, time) // Lưu giá trị vào SharedPreferences
+                        preferenceManager.saveReminderTime(currentUser, time) // Lưu giá trị vào SharedPreferences
+                        Log.d("ReminderTime", "Reminder time set to: $currentUser is $time")
                         onDismiss() // Đóng hộp thoại
                     }
                 ) {
@@ -108,16 +113,4 @@ fun TimePicker(onTimeSelected: (Int, Int) -> Unit) {
             state = timePickerState
         )
     }
-}
-
-fun saveReminderTime(context: Context, time: String) {
-    val sharedPreferences: SharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-    val editor = sharedPreferences.edit()
-    editor.putString("reminder_time", time)
-    editor.apply()
-}
-
-fun getReminderTime(context: Context): String? {
-    val sharedPreferences: SharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-    return sharedPreferences.getString("reminder_time", "10:00") // Giá trị mặc định nếu không có
 }

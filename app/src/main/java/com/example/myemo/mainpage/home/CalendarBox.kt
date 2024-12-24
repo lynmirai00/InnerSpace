@@ -107,6 +107,7 @@ fun CalendarBox(
                 Spacer(modifier = Modifier.width(6.dp))
                 Box(
                     modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
                         .clickable { monthMenuExpanded = true },
                 ) {
                     Text(
@@ -157,6 +158,7 @@ fun CalendarBox(
                 }
                 Box(
                     modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
                         .clickable { yearMenuExpanded = true },
                 ) {
                     Text(

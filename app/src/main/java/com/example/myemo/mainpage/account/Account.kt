@@ -1,6 +1,9 @@
 package com.example.myemo.mainpage.account
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import coil.compose.rememberAsyncImagePainter
 import com.example.myemo.PreferenceManager
 import com.example.myemo.R
@@ -49,6 +53,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun Account(
@@ -60,27 +65,32 @@ fun Account(
     val currentUser = FirebaseAuth.getInstance().currentUser
     var showChangeNameDialog by remember { mutableStateOf(false) }
     var showReminderTimeDialog by remember { mutableStateOf(false) }
-    var reminderTime by remember {
-        mutableStateOf(
-            getReminderTime(context) ?: "10:00"
-        )
-    } // Giá trị mặc định
 
     // Ở phần UI chính, tạo SnackbarHostState và CoroutineScope
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val preferenceManager = remember { PreferenceManager(context) }
+    var reminderTime by remember { mutableStateOf(preferenceManager.getReminderTime(currentUser?.email.toString())) } // Giá trị mặc định
     val backgroundColor = remember { mutableStateOf(Color(preferenceManager.getBackgroundColor())) }
     val selectedImageUri = remember { mutableStateOf(preferenceManager.getAvatarUri(currentUser?.email.toString())) }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            selectedImageUri.value = it.toString()
-            preferenceManager.saveAvatarUri(currentUser?.email.toString(), it.toString())
-            Log.d("AvatarDebug", "Current Avatar URI: ${selectedImageUri.value}")
+            val croppedBitmap = cropImageToSquare(context, it)
+            croppedBitmap.let { bitmap ->
+                val outputUri = saveBitmapToCache(context, bitmap, currentUser?.email.toString())
+                selectedImageUri.value = outputUri.toString()
+                preferenceManager.saveAvatarUri(currentUser?.email.toString(), outputUri.toString())
+                Log.d("AvatarDebug", "Cropped Avatar URI: ${currentUser?.email.toString()}, $outputUri")
+            }
         }
     }
+
+//    LaunchedEffect(selectedImageUri.value) {
+//        Log.d("AvatarDebug", "Cropped Avatar URI: ${selectedImageUri.value}")
+//    }
 
     Box(
         modifier = Modifier
@@ -92,7 +102,6 @@ fun Account(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()) // Cho phép cuộn nội dung
-                .padding(bottom = 80.dp) // Dành khoảng trống cho ActionBar
         ) {
             Spacer(modifier = Modifier.height(200.dp)) // Khoảng cách giữa các phần
 
@@ -107,6 +116,7 @@ fun Account(
                 Box(
                     modifier = Modifier
                         .size(150.dp)
+                        .clip(RoundedCornerShape(70.dp)) // Cắt ảnh thành hình tròn
                         .background(backgroundColor.value, shape = RoundedCornerShape(75.dp))
                         .border(
                             8.dp,
@@ -192,7 +202,7 @@ fun Account(
                     onDismiss = { showReminderTimeDialog = false },
                     onTimeSet = { time ->
                         reminderTime = time // Cập nhật giờ nhắc nhở
-                        saveReminderTime(context, time) // Lưu giờ nhắc nhở vào SharedPreferences
+                        preferenceManager.saveReminderTime(currentUser?.email.toString(), time) // Lưu giờ nhắc nhở vào SharedPreferences
                         // Gọi hàm setupReminder để khởi động nhắc nhở
                         setupReminder(context, reminderTime)
                     }
@@ -401,3 +411,34 @@ fun Account(
 
     }
 }
+
+fun cropImageToSquare(context: Context, uri: Uri): Bitmap {
+    val sourceBitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+
+    // Lấy kích thước nhỏ nhất để tạo hình vuông
+    val size = minOf(sourceBitmap.width, sourceBitmap.height)
+    val xOffset = (sourceBitmap.width - size) / 2
+    val yOffset = (sourceBitmap.height - size) / 2
+
+    // Cắt ảnh
+    return Bitmap.createBitmap(sourceBitmap, xOffset, yOffset, size, size)
+}
+
+
+fun saveBitmapToCache(context: Context, bitmap: Bitmap, email: String): Uri {
+    // Tạo tên tệp duy nhất dựa trên email và thời gian hiện tại
+    val fileName = "cropped_avatar_${email.hashCode()}_${System.currentTimeMillis()}.png"
+    val file = File(context.cacheDir, fileName)
+
+    // Lưu bitmap vào tệp
+    file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+
+    // Trả về URI của tệp đã lưu
+    return FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.provider",
+        file
+    )
+}
+
+

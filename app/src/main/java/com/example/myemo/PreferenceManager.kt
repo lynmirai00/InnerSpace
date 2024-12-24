@@ -2,6 +2,7 @@ package com.example.myemo
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 
 class PreferenceManager(context: Context) {
 
@@ -33,4 +34,15 @@ class PreferenceManager(context: Context) {
     fun getBackgroundColor(): Int {
         return sharedPreferences.getInt(KEY_BACKGROUND_COLOR, DEFAULT_COLOR)
     }
+
+    // Lưu thời gian nhắc nhở
+    fun saveReminderTime(userId: String, time: String) {
+        sharedPreferences.edit().putString("reminder_time_$userId", time).apply()
+    }
+
+    // Lấy thời gian nhắc nhở
+    fun getReminderTime(userId: String): String {
+        return sharedPreferences.getString("reminder_time_$userId", "10:00") ?: "10:00"
+    }
+
 }
