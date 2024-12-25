@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.myemo.mainpage.account
 
 import android.content.Context
