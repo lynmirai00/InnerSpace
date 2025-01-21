@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.myemo.ui.theme.MyEmoTheme
 import java.util.Locale
 
+@Suppress("DEPRECATION")
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)

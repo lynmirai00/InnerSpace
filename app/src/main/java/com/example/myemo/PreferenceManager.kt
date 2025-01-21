@@ -2,7 +2,6 @@ package com.example.myemo
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 
 class PreferenceManager(context: Context) {
 
