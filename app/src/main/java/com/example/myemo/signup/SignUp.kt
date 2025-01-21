@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -44,6 +46,7 @@ import com.example.myemo.PreferenceManager
 import com.example.myemo.R
 import com.example.myemo.components.HeaderText
 import com.example.myemo.components.LoginTextField
+import com.example.myemo.mainpage.home.EmojiItem
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
@@ -100,12 +103,11 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                 ) {
                     // Header
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     ) {
                         HeaderText(
                             text = "Sign Up to",
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
@@ -116,13 +118,87 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                         )
 
                     }
+                    Text(
+                        text = "Embrace your emotions, understand yourself",
+                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Black,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Khi người dùng nhấn vào một emoji, cập nhật cảm xúc cho ngày
+                        Box(
+                            modifier = Modifier
+                                .height(40.dp)
+                                .width(40.dp)
+                        ) {
+                            EmojiItem(
+                                icon = R.drawable.happy,
+                                label = "Happy",
+                                onEmojiClick = {},
+                                Color(0xFFFFFAE6)
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .height(40.dp)
+                                .width(40.dp)
+                        ) {
+                            EmojiItem(
+                                icon = R.drawable.neutral,
+                                label = "Neutral",
+                                onEmojiClick = {},
+                                Color(0xFFEAFBFE)
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .height(40.dp)
+                                .width(40.dp)
+                        ) {
+                            EmojiItem(
+                                icon = R.drawable.bored,
+                                label = "Bored",
+                                onEmojiClick = {},
+                                Color(0xFFEDEDED)
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .height(40.dp)
+                                .width(40.dp)
+                        ) {
+                            EmojiItem(
+                                icon = R.drawable.sad,
+                                label = "Sad",
+                                onEmojiClick = {},
+                                Color(0xFFB8D1F1)
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .height(40.dp)
+                                .width(40.dp)
+                        ) {
+                            EmojiItem(
+                                icon = R.drawable.angry,
+                                label = "Angry",
+                                onEmojiClick = {},
+                                Color(0xFFFFD5CD)
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // Name Field
                     LoginTextField(
                         value = name,
                         onValueChange = onNameChange,
-                        labelText = "Name",
+                        labelText = stringResource(R.string.name),
                         modifier = Modifier
                             .height(65.dp)
                             .width(250.dp),
@@ -130,7 +206,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AnimatedVisibility(isNameEmpty) {
                         Text(
-                            "Name is not fill!",
+                            text = stringResource(R.string.namenotfill),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
@@ -140,7 +216,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                     LoginTextField(
                         value = email,
                         onValueChange = onEmailChange,
-                        labelText = "Email",
+                        labelText = stringResource(R.string.email),
                         modifier = Modifier
                             .height(65.dp)
                             .width(250.dp),
@@ -148,13 +224,13 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AnimatedVisibility(isEmailEmpty) {
                         Text(
-                            "Email is not fill!",
+                            text = stringResource(R.string.emailnotfill),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
                     AnimatedVisibility(isEmailWrong) {
                         Text(
-                            "Please enter a valid email format!",
+                            text = stringResource(R.string.emailwrong),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
@@ -164,7 +240,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                     LoginTextField(
                         value = password,
                         onValueChange = onPasswordChange,
-                        labelText = "Password",
+                        labelText = stringResource(R.string.password),
                         modifier = Modifier
                             .height(65.dp)
                             .width(250.dp),
@@ -184,13 +260,13 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AnimatedVisibility(isPasswordEmpty) {
                         Text(
-                            "Password is not fill!",
+                            text = stringResource(R.string.passwordnotfill),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
                     AnimatedVisibility(isPasswordTooShort) {
                         Text(
-                            "Password must be at least 6 characters long!",
+                            text = stringResource(R.string.passwordtooshort),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
@@ -200,7 +276,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                     LoginTextField(
                         value = confirmPassword,
                         onValueChange = onConfirmPasswordChange,
-                        labelText = "Confirm Password",
+                        labelText = stringResource(R.string.confirmpassword),
                         modifier = Modifier
                             .height(65.dp)
                             .width(250.dp),
@@ -220,13 +296,13 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                     Spacer(Modifier.height(8.dp))
                     AnimatedVisibility(isConfirmPasswordEmpty) {
                         Text(
-                            "Confirm Password is not fill!",
+                            text = stringResource(R.string.confirmpasswordnotfill),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
                     AnimatedVisibility(isPasswordSame) {
                         Text(
-                            "Password is not matching",
+                            text = stringResource(R.string.passwordnotsame),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
@@ -313,7 +389,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                         },
                     ) {
                         Text(
-                            "Create Account",
+                            text = stringResource(R.string.signup),
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 20.sp,
                             color = Color.Black
@@ -322,7 +398,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                     Spacer(modifier = Modifier.height(8.dp))
                     AnimatedVisibility(isSignUpFail) {
                         Text(
-                            "This email is exist",
+                            text = stringResource(R.string.signupfail),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
@@ -331,11 +407,11 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
             // Sign In Row
             Row {
                 Text(
-                    "Already have an Account?",
+                    text = stringResource(R.string.haveaccount),
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
                 TextButton(onClick = onLoginClick) {
-                    Text("Sign In")
+                    Text(text = stringResource(R.string.signin))
                 }
             }
         }

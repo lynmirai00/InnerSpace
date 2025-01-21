@@ -25,8 +25,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myemo.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -43,10 +45,9 @@ fun DeleteAccountDialog(
                 openDialog.value = false
                 onDismiss()
             },
-            title = { Text(text = "Confirm Delete Account") },
+            title = { Text(text = stringResource(R.string.confirmdeleteaccount)) },
             text = {
-                Text(
-                    "Are you sure you want to delete your account? This action cannot be undone.",
+                Text(text = stringResource(R.string.deleteaccountwarning),
                     color = Color(0xFFFF7260),
                     fontSize = 18.sp,
                     style = MaterialTheme.typography.bodyMedium,
@@ -103,7 +104,7 @@ fun DeleteAccountButton(onLogout: () -> Unit) {
             horizontalArrangement = Arrangement.Start // Căn chỉnh về bên trái
         ) {
             Text(
-                "Delete Account",
+                text = stringResource(R.string.deleteaccount),
                 style = MaterialTheme.typography.bodySmall,
                 fontSize = 20.sp
             )

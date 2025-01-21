@@ -217,6 +217,7 @@ fun getEmotionDataForMonth(
                     "EmotionData",
                     "Date: $dateStr, Emoji: $emoji, Day Index: $dayIndex, Current Emotion Value: ${emotionData[dayIndex]}"
                 )
+
             }
 
             // In ra toàn bộ emotionData để kiểm tra

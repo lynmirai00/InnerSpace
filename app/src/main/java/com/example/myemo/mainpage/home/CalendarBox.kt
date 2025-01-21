@@ -95,7 +95,19 @@ fun CalendarBox(
                     modifier = Modifier
                         .height(40.dp)
                         .width(40.dp)
-                        .background(backgroundColor.value, CircleShape),
+                        .background(backgroundColor.value, CircleShape)
+                        .clip(CircleShape)
+                        .clickable {
+                            // Giảm tháng
+                            if (selectedMonth == 1) {
+                                selectedMonth = 12
+                                selectedYear -= 1 // Giảm năm nếu đang là tháng 1
+                            } else {
+                                selectedMonth -= 1
+                            }
+                            onMonthChanged(selectedMonth)
+                            onYearChanged(selectedYear)
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
@@ -212,7 +224,19 @@ fun CalendarBox(
                     modifier = Modifier
                         .height(40.dp)
                         .width(40.dp)
-                        .background(backgroundColor.value, CircleShape),
+                        .background(backgroundColor.value, CircleShape)
+                        .clip(CircleShape)
+                        .clickable {
+                            // Tăng tháng
+                            if (selectedMonth == 12) {
+                                selectedMonth = 1
+                                selectedYear += 1 // Tăng năm nếu đang là tháng 12
+                            } else {
+                                selectedMonth += 1
+                            }
+                            onMonthChanged(selectedMonth)
+                            onYearChanged(selectedYear)
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
@@ -228,13 +252,14 @@ fun CalendarBox(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach { day ->
                     Box(
                         contentAlignment = Alignment.Center, // Căn giữa văn bản
                         modifier = Modifier
-                            .padding(5.dp)
                             .width(40.dp)
+                            .padding(3.dp)
                             .background(backgroundColor.value)
                     ) {
                         Text(
@@ -248,7 +273,9 @@ fun CalendarBox(
             // Calendar Grid
             LazyVerticalGrid(
                 columns = GridCells.Fixed(7),
-                modifier = Modifier.padding(5.dp),
+                modifier = Modifier
+                    .padding(5.dp)
+                    .heightIn(max = 350.dp) // Giới hạn chiều cao
             ) {
                 // Add empty slots for days before the first day of the week
                 for (i in 1 until firstDayOfWeek) {
@@ -326,12 +353,18 @@ fun DayItem(
         } else {
             val (iconResId, bgColor) = getEmojiImageResourceAndColor(emoji)
                 ?: (R.drawable.home to Color.Gray)
-            EmojiItem(
-                icon = iconResId,
-                label = emoji,
-                onEmojiClick = { onDaySelected(currentDayDate) },
-                color = bgColor
-            )
+            Box(
+                modifier = Modifier
+                    .height(40.dp)
+                    .width(40.dp)
+            ) {
+                EmojiItem(
+                    icon = iconResId,
+                    label = emoji,
+                    onEmojiClick = { onDaySelected(currentDayDate) },
+                    color = bgColor
+                )
+            }
         }
     }
 }

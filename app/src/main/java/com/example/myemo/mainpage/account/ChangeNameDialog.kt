@@ -23,8 +23,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myemo.R
 import com.example.myemo.components.LoginTextField
 
 @Composable
@@ -37,7 +39,7 @@ fun ChangeNameDialog(
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text("Change Name") },
+        title = { Text(text = stringResource(R.string.changename)) },
         text = {
             Column(
                 modifier = Modifier
@@ -51,7 +53,7 @@ fun ChangeNameDialog(
                 LoginTextField(
                     value = newName,
                     onValueChange = { newName = it },
-                    labelText = "New Name",
+                    labelText = stringResource(R.string.newname),
                     modifier = Modifier
                         .height(65.dp)
                         .width(250.dp),
@@ -59,7 +61,7 @@ fun ChangeNameDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 AnimatedVisibility(isNewNameEmpty) {
                     Text(
-                        "New Name is not filled!",
+                        text = stringResource(R.string.newnamenotfill),
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )

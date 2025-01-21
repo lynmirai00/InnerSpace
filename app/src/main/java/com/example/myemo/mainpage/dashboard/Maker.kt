@@ -1,10 +1,8 @@
 package com.example.myemo.mainpage.dashboard
 
 import android.text.Layout
-import android.util.Log
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
@@ -68,7 +66,7 @@ internal fun rememberMarker(
             padding = dimensions(10.dp),
         )
     val guideline = rememberAxisGuidelineComponent()
-//    Log.d("MarkerValue", "Current label value: $labelPosition")
+
     return remember(label, labelPosition, indicator, showIndicator, guideline) {
         object :
             DefaultCartesianMarker(

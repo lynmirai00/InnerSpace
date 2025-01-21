@@ -33,8 +33,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import com.example.myemo.PreferenceManager
+import com.example.myemo.R
 
 @Composable
 fun ChangeBackgroundColorDialog(context: Context, onBackgroundColorChanged: (Int) -> Unit) {
@@ -62,7 +64,7 @@ fun ChangeBackgroundColorDialog(context: Context, onBackgroundColorChanged: (Int
             horizontalArrangement = Arrangement.Start
         ) {
             Text(
-                "Change Background Color",
+                text = stringResource(R.string.changebackgroundcolor),
                 style = MaterialTheme.typography.bodySmall,
                 fontSize = 20.sp,
                 color = Color.Black

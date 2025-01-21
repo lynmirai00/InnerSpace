@@ -13,6 +13,10 @@ class PreferenceManager(context: Context) {
         private const val KEY_BACKGROUND_COLOR = "background_color"
         private const val DEFAULT_COLOR = 0xFFd1e9f6.toInt()
         private const val DEFAULT_AVATAR_URI = "" // Giá trị mặc định rỗng
+        private const val KEY_LANGUAGE = "selected_language"
+        private const val DEFAULT_LANGUAGE = "ja" // Giá trị mặc định là tiếng Nhật
+        private const val KEY_SELECTED_FLAG = "selected_flag" // Flag key for shared preferences
+        private val DEFAULT_FLAG_RES_ID = R.drawable.japan // Default flag is Japan
     }
 
     // Lưu URI của avatar theo userId
@@ -45,4 +49,23 @@ class PreferenceManager(context: Context) {
         return sharedPreferences.getString("reminder_time_$userId", "10:00") ?: "10:00"
     }
 
+    // Lưu ngôn ngữ đã chọn
+    fun saveSelectedLanguage(language: String) {
+        sharedPreferences.edit().putString(KEY_LANGUAGE, language).apply()
+    }
+
+    // Lấy ngôn ngữ đã chọn
+    fun getSelectedLanguage(): String {
+        return sharedPreferences.getString(KEY_LANGUAGE, DEFAULT_LANGUAGE) ?: DEFAULT_LANGUAGE
+    }
+
+    // Save Selected Flag
+    fun saveSelectedFlag(flagResId: Int) {
+        sharedPreferences.edit().putInt(KEY_SELECTED_FLAG, flagResId).apply()
+    }
+
+    // Get Selected Flag
+    fun getSelectedFlag(): Int {
+        return sharedPreferences.getInt(KEY_SELECTED_FLAG, DEFAULT_FLAG_RES_ID) // Default is Japan flag
+    }
 }

@@ -16,12 +16,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.myemo.ui.theme.MyEmoTheme
+import java.util.Locale
 
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        applySavedLanguage()
         setContent {
             MyEmoTheme {
                 Surface(
@@ -37,6 +39,17 @@ class MainActivity : ComponentActivity() {
         // Gọi hàm tạo Notification Channel nếu cần
         Log.d("MainActivity", "onCreate called")
         createNotificationChannel(this)
+    }
+
+    private fun applySavedLanguage() {
+        val preferenceManager = PreferenceManager(this)
+        val selectedLanguage = preferenceManager.getSelectedLanguage()
+
+        val locale = Locale(selectedLanguage)
+        Locale.setDefault(locale)
+        val config = resources.configuration
+        config.setLocale(locale)
+        resources.updateConfiguration(config, resources.displayMetrics)
     }
 
     private fun createNotificationChannel(context: Context) {

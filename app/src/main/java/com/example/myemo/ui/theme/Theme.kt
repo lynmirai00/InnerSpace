@@ -64,6 +64,7 @@ fun MyEmoTheme(
             displaySmall = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_blackitalic))),
             bodyMedium = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_mediumitalic))),
             bodySmall = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
+            bodyLarge = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_regular))),
             labelSmall = TextStyle(fontFamily = FontFamily(Font(R.font.poppins_italic))),
         ),
         content = content

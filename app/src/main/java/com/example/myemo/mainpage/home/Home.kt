@@ -8,8 +8,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myemo.PreferenceManager
@@ -89,9 +92,12 @@ fun Home(
     // Tự động lưu nhật ký khi diaryText thay đổi
     LaunchedEffect(diaryText.value) {
         selectedDate.value?.let { date ->
-            saveDiaryEntry(date, dayToEmojiMap[date], diaryText.value)
+            if (dayToEmojiMap.containsKey(date)) {
+                saveDiaryEntry(date, dayToEmojiMap[date], diaryText.value)
+            }
         }
     }
+
 
     // Tự động tải dữ liệu emoji khi ngày, tháng hoặc năm thay đổi
     LaunchedEffect(selectedYear, selectedMonth) {
@@ -136,13 +142,14 @@ fun Home(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Hi, ${currentUser?.displayName ?: "User"}\nGive you some flowers today ",
+                    text = stringResource(id = R.string.greeting, currentUser?.displayName ?: "User"),
                     style = MaterialTheme.typography.bodyLarge,
                     fontSize = 19.sp
                 )
@@ -178,7 +185,17 @@ fun Home(
 
             EmojiBox(
                 showDialog = showEmojiBox.value,
-                onDismiss = { showEmojiBox.value = false },
+                onDismiss = {
+                    // Kiểm tra nếu ngày được chọn đã có emoji
+                    val selectedDay = selectedDate.value
+                    if (selectedDay != null && dayToEmojiMap.containsKey(selectedDay)) {
+                        // Ngày đã có emoji, không làm gì
+                    } else {
+                        // Ngày chưa có emoji, đặt selectedDate về null
+                        selectedDate.value = null
+                    }
+                    showEmojiBox.value = false
+                },
                 onEmojiClick = { emoji ->
                     val updatedMap = dayToEmojiMap.toMutableMap()
                     updatedMap[selectedDate.value ?: LocalDate.now()] = emoji
@@ -194,8 +211,8 @@ fun Home(
             Column {
 
                 Text(
-                    text = selectedDate.value?.let { "Tell me something on ${it.dayOfMonth}-${it.monthValue}-${it.year}" }
-                        ?: "Please select a date",
+                    text = selectedDate.value?.let { stringResource(id = R.string.onday, "${it.year}-${it.monthValue}-${it.dayOfMonth}") }
+                        ?: stringResource(R.string.selectdate),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 2.dp, bottom = 10.dp)
                 )
@@ -203,7 +220,7 @@ fun Home(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
+                        .height(190.dp)
                         .background(Color.White, RoundedCornerShape(10.dp))
                         .border(1.dp, Color.White, RoundedCornerShape(10.dp))
                         .padding(10.dp)
@@ -215,15 +232,14 @@ fun Home(
                         modifier = Modifier.fillMaxSize(),
                         decorationBox = { innerTextField ->
                             if (diaryText.value.isEmpty()) {
-                                Text("Start writing here...", color = Color.Gray)
+                                Text(text = stringResource(R.string.diaryhint), color = Color.Gray)
                             }
                             innerTextField()
                         }
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(50.dp))
         }
 
         Box(

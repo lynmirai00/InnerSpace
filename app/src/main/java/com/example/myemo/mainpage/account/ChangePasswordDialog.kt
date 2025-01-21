@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -66,7 +67,7 @@ fun ChangePasswordDialog(
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
-        title = { Text("Change Password") },
+        title = { Text(text = stringResource(R.string.changepassword)) },
         text = {
             Column(
                 modifier = Modifier
@@ -80,7 +81,7 @@ fun ChangePasswordDialog(
                 LoginTextField(
                     value = oldPassword,
                     onValueChange = { oldPassword = it },
-                    labelText = "Old Password",
+                    labelText = stringResource(R.string.oldpassword),
                     modifier = Modifier
                         .height(65.dp)
                         .width(250.dp),
@@ -100,14 +101,14 @@ fun ChangePasswordDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 AnimatedVisibility(isOldPasswordEmpty) {
                     Text(
-                        "Old Password is not filled!",
+                        text = stringResource(R.string.oldpasswordnotfill),
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
                 }
                 AnimatedVisibility(isOldPasswordWrong) {
                     Text(
-                        "Old Password is not correct!",
+                        text = stringResource(R.string.oldpasswordwrong),
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
@@ -118,7 +119,7 @@ fun ChangePasswordDialog(
                 LoginTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
-                    labelText = "New Password",
+                    labelText = stringResource(R.string.newpassword),
                     modifier = Modifier
                         .height(65.dp)
                         .width(250.dp),
@@ -138,14 +139,14 @@ fun ChangePasswordDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 AnimatedVisibility(isNewPasswordEmpty) {
                     Text(
-                        "New Password is not filled!",
+                        text = stringResource(R.string.newpasswordnotfill),
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
                 }
                 AnimatedVisibility(isPasswordTooShort) {
                     Text(
-                        "Password must be at least 6 characters long!",
+                        text = stringResource(R.string.passwordtooshort),
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -157,7 +158,7 @@ fun ChangePasswordDialog(
                 LoginTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    labelText = "Confirm New Password",
+                    labelText = stringResource(R.string.confirmnewpassword),
                     modifier = Modifier
                         .height(65.dp)
                         .width(250.dp),
@@ -177,14 +178,14 @@ fun ChangePasswordDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 AnimatedVisibility(isConfirmPasswordEmpty) {
                     Text(
-                        "Confirm New Password is not filled!",
+                        text = stringResource(R.string.confirmnewpasswordnotfill),
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
                 }
                 AnimatedVisibility(isPasswordSame) {
                     Text(
-                        "Password is not matching!",
+                        text = stringResource(R.string.passwordnotsame),
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
@@ -249,6 +250,7 @@ fun ChangePasswordDialog(
 @Composable
 fun ChangePasswordButton(snackbarHostState: SnackbarHostState, scope: CoroutineScope) {
     var showChangePasswordDialog by remember { mutableStateOf(false) }
+    val passwordUpdatedMessage = stringResource(R.string.passwordupdated)
 
     // Nút đổi mật khẩu
     Box(
@@ -266,7 +268,7 @@ fun ChangePasswordButton(snackbarHostState: SnackbarHostState, scope: CoroutineS
             horizontalArrangement = Arrangement.Start // Căn chỉnh về bên trái
         ) {
             Text(
-                "Change Password",
+                text = stringResource(R.string.changepassword),
                 style = MaterialTheme.typography.bodySmall,
                 fontSize = 20.sp
             )
@@ -285,15 +287,11 @@ fun ChangePasswordButton(snackbarHostState: SnackbarHostState, scope: CoroutineS
                             Log.d("ChangePassword", "Password updated successfully")
                             // Hiển thị thông báo thành công, đóng dialog
                             scope.launch {
-                                snackbarHostState.showSnackbar("Password updated successfully \uD83C\uDF89")
+                                snackbarHostState.showSnackbar(passwordUpdatedMessage)
                             }
                             showChangePasswordDialog = false
                         } else {
                             Log.e("ChangePassword", "Failed to update password", updateTask.exception)
-                            // Hiển thị thông báo lỗi
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Failed to update password")
-                            }
                         }
                     }
             },

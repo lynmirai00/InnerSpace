@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -71,10 +72,13 @@ fun Account(
     // Ở phần UI chính, tạo SnackbarHostState và CoroutineScope
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val avatarUpdatedMessage = stringResource(R.string.avatarupdated)
+    val nameUpdatedMessage = stringResource(R.string.nameupdated)
     val preferenceManager = remember { PreferenceManager(context) }
     var reminderTime by remember { mutableStateOf(preferenceManager.getReminderTime(currentUser?.email.toString())) } // Giá trị mặc định
     val backgroundColor = remember { mutableStateOf(Color(preferenceManager.getBackgroundColor())) }
-    val selectedImageUri = remember { mutableStateOf(preferenceManager.getAvatarUri(currentUser?.email.toString())) }
+    val selectedImageUri =
+        remember { mutableStateOf(preferenceManager.getAvatarUri(currentUser?.email.toString())) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -85,14 +89,16 @@ fun Account(
                 val outputUri = saveBitmapToCache(context, bitmap, currentUser?.email.toString())
                 selectedImageUri.value = outputUri.toString()
                 preferenceManager.saveAvatarUri(currentUser?.email.toString(), outputUri.toString())
-                Log.d("AvatarDebug", "Cropped Avatar URI: ${currentUser?.email.toString()}, $outputUri")
+                scope.launch {
+                    snackbarHostState.showSnackbar(avatarUpdatedMessage)
+                }
+                Log.d(
+                    "AvatarDebug",
+                    "Cropped Avatar URI: ${currentUser?.email.toString()}, $outputUri"
+                )
             }
         }
     }
-
-//    LaunchedEffect(selectedImageUri.value) {
-//        Log.d("AvatarDebug", "Cropped Avatar URI: ${selectedImageUri.value}")
-//    }
 
     Box(
         modifier = Modifier
@@ -186,7 +192,7 @@ fun Account(
                         horizontalArrangement = Arrangement.SpaceBetween // Căn chỉnh về bên trái
                     ) {
                         Text(
-                            "Set Reminder Time",
+                            text = stringResource(R.string.setremindertime),
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 20.sp
                         )
@@ -204,7 +210,10 @@ fun Account(
                     onDismiss = { showReminderTimeDialog = false },
                     onTimeSet = { time ->
                         reminderTime = time // Cập nhật giờ nhắc nhở
-                        preferenceManager.saveReminderTime(currentUser?.email.toString(), time) // Lưu giờ nhắc nhở vào SharedPreferences
+                        preferenceManager.saveReminderTime(
+                            currentUser?.email.toString(),
+                            time
+                        ) // Lưu giờ nhắc nhở vào SharedPreferences
                         // Gọi hàm setupReminder để khởi động nhắc nhở
                         setupReminder(context, reminderTime)
                     }
@@ -236,7 +245,7 @@ fun Account(
                         horizontalArrangement = Arrangement.Start // Căn chỉnh về bên trái
                     ) {
                         Text(
-                            "Change Name",
+                            text = stringResource(R.string.changename),
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 20.sp
                         )
@@ -272,7 +281,7 @@ fun Account(
                                                     )
                                                     // Đóng dialog sau khi cập nhật thành công
                                                     scope.launch {
-                                                        snackbarHostState.showSnackbar("Name updated successfully \uD83C\uDF89")
+                                                        snackbarHostState.showSnackbar(nameUpdatedMessage)
                                                     }
                                                     showChangeNameDialog = false
                                                 } else {
@@ -281,18 +290,11 @@ fun Account(
                                                         "Failed to update displayName",
                                                         task.exception
                                                     )
-                                                    scope.launch {
-                                                        snackbarHostState.showSnackbar("Failed to update display name")
-                                                    }
                                                 }
                                             }
                                     }
                                     .addOnFailureListener { e ->
                                         Log.e("ChangeName", "Error updating user name", e)
-                                        // Hiển thị thông báo lỗi
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar("Failed to update name in Firestore")
-                                        }
                                     }
                             }
                         },
@@ -327,7 +329,7 @@ fun Account(
                         horizontalArrangement = Arrangement.Start // Căn chỉnh về bên trái
                     ) {
                         Text(
-                            "Feedback",
+                            text = stringResource(R.string.feedback),
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 20.sp
                         )
@@ -353,7 +355,7 @@ fun Account(
                         horizontalArrangement = Arrangement.Start // Căn chỉnh về bên trái
                     ) {
                         Text(
-                            "About Us",
+                            text = stringResource(R.string.aboutus),
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 20.sp
                         )
@@ -378,13 +380,12 @@ fun Account(
                         horizontalArrangement = Arrangement.Start // Căn chỉnh về bên trái
                     ) {
                         Text(
-                            "Log Out",
+                            text = stringResource(R.string.logout),
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 20.sp
                         )
                     }
                 }
-
             }
         }
 
@@ -408,7 +409,7 @@ fun Account(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .height(80.dp)
-                .width(280.dp),
+                .width(300.dp),
         )
 
     }

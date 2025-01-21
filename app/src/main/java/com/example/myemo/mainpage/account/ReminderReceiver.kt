@@ -28,8 +28,8 @@ class ReminderReceiver : BroadcastReceiver() {
 
         // Tạo nội dung thông báo
         val notification = NotificationCompat.Builder(context, channelId)
-            .setContentTitle("Reminder")
-            .setContentText("How's your day today? Take a moment to record your emotions!😊")
+            .setContentTitle("リマインダー")
+            .setContentText("今日はどんな一日でしたか？少し時間を取って、あなたの気持ちを記録してみましょう！😊")
             .setSmallIcon(R.drawable.user)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
