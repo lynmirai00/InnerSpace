@@ -57,4 +57,16 @@
     <string name="recordemotionnotgood">Record regularly to understand your emotions</string>
     <string name="recordemotiongood">Great job recording emotions this month 😊</string>
     <string name="recordemotiongood2">Keep recording your emotions next month</string>
+    <string name="showdetails">Show details</string>
+    <string name="hidedetails">Hide details</string>
+    <string name="happy">When your heart is full of joy, the world around you becomes more beautiful 😊</string>
+    <string name="neutral">Peace is part of the journey, helping you to appreciate what truly matters 🌿</string>
+    <string name="bored">When you feel bored, maybe you just need a little time to refresh yourself 🌟</string>
+    <string name="sad">Today’s sadness will become a lesson that makes you stronger tomorrow 🌈</string>
+    <string name="angry">Anger is a reminder to listen to your emotions and find ways to release them 🔥</string>
+    <string name="happy1">Happiness is not found far away, it’s in the small moments every day 😊</string>
+    <string name="neutral1">When you feel neutral, it’s a sign that you are grounded in life 🌿</string>
+    <string name="bored1">Sometimes, boredom is a signal to seek out new and exciting things 🌟</string>
+    <string name="sad1">Don’t fear sadness, because it’s the way you understand and love yourself more 🌈</string>
+    <string name="angry1">Anger doesn’t make you stronger, but calmness will help you rise 🔥</string>
 </resources>

@@ -57,4 +57,16 @@
     <string name="recordemotionnotgood">感情を把握するために、もっと定期的に記録しましょう</string>
     <string name="recordemotiongood">今月は感情をしっかり記録しましたね 😊</string>
     <string name="recordemotiongood2">来月も続けて、自分の感情を記録していきましょう</string>
+    <string name="showdetails">詳細を見る</string>
+    <string name="hidedetails">詳細を閉じる</string>
+    <string name="happy">心が喜びで満たされると、周りの世界がより美しく見える 😊</string>
+    <string name="neutral">平和は旅の一部であり、何が本当に大切かを理解する手助けとなる 🌿</string>
+    <string name="bored">退屈を感じる時、それはリフレッシュするための時間かもしれない 🌟</string>
+    <string name="sad">今日の悲しみは、明日より強くなるための教訓 🌈</string>
+    <string name="angry">怒りは自分の感情に耳を傾け、それを解放する方法を見つけるためのリマインダー 🔥</string>
+    <string name="happy1">幸せは遠くにあるものではなく、毎日の小さな瞬間の中にある 😊</string>
+    <string name="neutral1">中立的な気持ちを感じる時、それはあなたがしっかりと地に足をつけている証拠 🌿</string>
+    <string name="bored1">時には退屈が新しい刺激を求めるサイン 🌟</string>
+    <string name="sad1">悲しみを恐れないで、それは自分をより理解し愛する方法 🌈</string>
+    <string name="angry1">怒りはあなたを強くしないが、冷静さはあなたを高める 🔥</string>
 </resources>

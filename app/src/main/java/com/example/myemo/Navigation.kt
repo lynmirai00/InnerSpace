@@ -106,6 +106,7 @@ fun MyNavigation(navHostController: NavHostController) {
                             popUpTo(navHostController.graph.findStartDestination().id) {
                                 inclusive = true
                             }
+                            launchSingleTop = true
                         }
                     }
                 )

@@ -10,10 +10,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -97,7 +100,39 @@ fun Dashboard(
     val lastRecordedDate = dayToEmojiMap.keys.maxOrNull()
     val selectedLanguage =
         remember { mutableStateOf(preferenceManager.getSelectedLanguage()) } // Ngôn ngữ mặc định là Japanese
+    val mostFrequentEmotion = sortedEmotions.firstOrNull()?.key ?: "None"
+    // Lời khuyên dựa trên các cảm xúc phổ biến nhất
+    val happyMessages = listOf(
+        stringResource(R.string.happy),
+        stringResource(R.string.happy1),
+    )
+    val neutralMessages = listOf(
+        stringResource(R.string.neutral),
+        stringResource(R.string.neutral1),
+    )
+    val boredMessages = listOf(
+        stringResource(R.string.bored),
+        stringResource(R.string.bored1),
+    )
+    val sadMessages = listOf(
+        stringResource(R.string.sad),
+        stringResource(R.string.sad1),
+    )
+    val angryMessages = listOf(
+        stringResource(R.string.angry),
+        stringResource(R.string.angry1),
+    )
 
+    val advice = when (mostFrequentEmotion) {
+        "Happy" -> happyMessages[LocalDate.now().dayOfYear % happyMessages.size]
+        "Neutral" -> neutralMessages[LocalDate.now().dayOfYear % neutralMessages.size]
+        "Bored" -> boredMessages[LocalDate.now().dayOfYear % boredMessages.size]
+        "Sad" -> sadMessages[LocalDate.now().dayOfYear % sadMessages.size]
+        "Angry" -> angryMessages[LocalDate.now().dayOfYear % angryMessages.size]
+        else -> stringResource(R.string.recordemotionnotgood)
+    }
+    Log.d("Dashboard", "advice: $advice")
+    var detailsExpanded by remember { mutableStateOf(false) }
     LaunchedEffect(currentUser?.email, selectedYear, selectedMonth) {
         dayToEmojiMap = fetchEmojiData(currentUser?.email ?: "", selectedYear, selectedMonth)
         monthSize = getDaysInMonth(selectedYear, selectedMonth).size
@@ -295,98 +330,240 @@ fun Dashboard(
                     ) {
                         Box(
                             modifier = Modifier
-                                .height(45.dp)
+                                .height(205.dp)
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
                                 .background(Color.White), // Màu nền khi không nhấn
                             contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
                         ) {
-                            Text(
-                                text = buildAnnotatedString {
-                                    append(stringResource(R.string.recordeddays))
-
-                                    // Thêm kiểu chữ cho số lượng emoji
-                                    pushStyle(
-                                        SpanStyle(
-                                            fontSize = 20.sp,
-                                            fontWeight = FontWeight.ExtraBold
+                            Column(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Text(
+                                    text = advice,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontSize = 25.sp,
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    textAlign = TextAlign.Center // Căn giữa khi có nhiều dòng
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.BottomCenter
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
+                                            .clickable {
+                                                detailsExpanded = !detailsExpanded
+                                            },
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(
+                                            text = if (detailsExpanded) stringResource(R.string.hidedetails) else stringResource(R.string.showdetails),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontSize = 13.sp,
+                                            modifier = Modifier.padding(8.dp)
                                         )
-                                    )
-                                    append("${dayToEmojiMap.size}") // Hiển thị số lượng emoji
-                                    pop() // Quay lại kiểu chữ mặc định
-                                    append(" / $monthSize ${stringResource(R.string.days)}")
-                                },
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontSize = 15.sp,
-                                modifier = Modifier.padding(start = 4.dp, end = 4.dp)
-                            )
+                                        Box(
+                                            modifier = Modifier
+                                                .height(25.dp)
+                                                .width(25.dp)
+                                                .background(Color.White, CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = if (detailsExpanded) R.drawable.straight else R.drawable.bottom_line),
+                                                contentDescription = "bottom_line",
+                                                modifier = Modifier.size(12.dp),
+                                                tint = Color.Black
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                    }
+                                }
+                            }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        // Hiển thị ngày ghi nhận cảm xúc đầu tiên
-                        firstRecordedDate?.let {
+
+                        // Hiển thị chỉ khi detailsExpanded là true
+                        if (detailsExpanded) {
                             Box(
                                 modifier = Modifier
                                     .height(45.dp)
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(Color.White),
-                                contentAlignment = Alignment.Center
+                                    .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
+                                    .background(Color.White), // Màu nền khi không nhấn
+                                contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
                             ) {
                                 Text(
-                                    text = "${stringResource(R.string.firstrecordedday)} $it",
+                                    text = buildAnnotatedString {
+                                        append(stringResource(R.string.recordeddays))
+
+                                        // Thêm kiểu chữ cho số lượng emoji
+                                        pushStyle(
+                                            SpanStyle(
+                                                fontSize = 20.sp,
+                                                fontWeight = FontWeight.ExtraBold
+                                            )
+                                        )
+                                        append("${dayToEmojiMap.size}") // Hiển thị số lượng emoji
+                                        pop() // Quay lại kiểu chữ mặc định
+                                        append(" / $monthSize ${stringResource(R.string.days)}")
+                                    },
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontSize = 15.sp,
                                     modifier = Modifier.padding(start = 4.dp, end = 4.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-                        }
-                        // Hiển thị ngày ghi nhận cảm xúc cuối cùng
-                        lastRecordedDate?.let {
-                            Box(
-                                modifier = Modifier
-                                    .height(45.dp)
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(Color.White),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "${stringResource(R.string.lastrecordedday)} $it",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 15.sp,
-                                    modifier = Modifier.padding(start = 4.dp, end = 4.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                        Box(
-                            modifier = Modifier
-                                .height(45.dp)
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
-                                .background(Color.White), // Màu nền khi không nhấn
-                            contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(start = 4.dp, end = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.mostcommonemotion),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 15.sp,
-                                    modifier = Modifier.padding(start = 4.dp, end = 4.dp)
-                                )
-                                if (sortedEmotions.isEmpty()) {
-                                    // Không có cảm xúc nào
+                            // Hiển thị ngày ghi nhận cảm xúc đầu tiên
+                            firstRecordedDate?.let {
+                                Box(
+                                    modifier = Modifier
+                                        .height(45.dp)
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color.White),
+                                    contentAlignment = Alignment.Center
+                                ) {
                                     Text(
-                                        text = stringResource(R.string.none),
+                                        text = "${stringResource(R.string.firstrecordedday)} $it",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontSize = 15.sp,
+                                        modifier = Modifier.padding(start = 4.dp, end = 4.dp)
                                     )
-                                } else {
-                                    sortedEmotions.forEach { (emotion, count) ->
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                            // Hiển thị ngày ghi nhận cảm xúc cuối cùng
+                            lastRecordedDate?.let {
+                                Box(
+                                    modifier = Modifier
+                                        .height(45.dp)
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color.White),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${stringResource(R.string.lastrecordedday)} $it",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 15.sp,
+                                        modifier = Modifier.padding(start = 4.dp, end = 4.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .height(45.dp)
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
+                                    .background(Color.White), // Màu nền khi không nhấn
+                                contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(start = 4.dp, end = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.mostcommonemotion),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 15.sp,
+                                        modifier = Modifier.padding(start = 4.dp, end = 4.dp)
+                                    )
+                                    if (sortedEmotions.isEmpty()) {
+                                        // Không có cảm xúc nào
+                                        Text(
+                                            text = stringResource(R.string.none),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            fontSize = 15.sp,
+                                        )
+                                    } else {
+                                        sortedEmotions.forEach { (emotion, count) ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .height(40.dp)
+                                                    .width(40.dp)
+                                            ) {
+                                                when (emotion) {
+                                                    "Happy" -> EmojiItem(
+                                                        icon = R.drawable.happy,
+                                                        label = "Happy",
+                                                        onEmojiClick = {},
+                                                        color = Color(0xFFFFFAE6)
+                                                    )
+
+                                                    "Neutral" -> EmojiItem(
+                                                        icon = R.drawable.neutral,
+                                                        label = "Neutral",
+                                                        onEmojiClick = {},
+                                                        color = Color(0xFFEAFBFE)
+                                                    )
+
+                                                    "Bored" -> EmojiItem(
+                                                        icon = R.drawable.bored,
+                                                        label = "Bored",
+                                                        onEmojiClick = {},
+                                                        color = Color(0xFFEDEDED)
+                                                    )
+
+                                                    "Sad" -> EmojiItem(
+                                                        icon = R.drawable.sad,
+                                                        label = "Sad",
+                                                        onEmojiClick = {},
+                                                        color = Color(0xFFB8D1F1)
+                                                    )
+
+                                                    "Angry" -> EmojiItem(
+                                                        icon = R.drawable.angry,
+                                                        label = "Angry",
+                                                        onEmojiClick = {},
+                                                        color = Color(0xFFFFD5CD)
+                                                    )
+                                                }
+                                            }
+                                            Text(
+                                                text = "(${count}${stringResource(R.string.days)})",
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                fontSize = 15.sp,
+                                            )
+                                            Spacer(modifier = Modifier.width(5.dp))
+                                        }
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .height(45.dp)
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
+                                    .background(Color.White), // Màu nền khi không nhấn
+                                contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(start = 4.dp, end = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.leastcommonemotion),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 15.sp,
+                                        modifier = Modifier.padding(start = 4.dp, end = 4.dp)
+                                    )
+                                    if (leastFrequentEmotion.isEmpty()) {
+                                        // Không có cảm xúc nào
+                                        Text(
+                                            text = stringResource(R.string.none),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            fontSize = 15.sp,
+                                        )
+                                    } else {
+                                        val (emotion, count) = leastFrequentEmotion.first() // Lấy phần tử đầu tiên trong danh sách
                                         Box(
                                             modifier = Modifier
                                                 .height(40.dp)
@@ -438,176 +615,116 @@ fun Dashboard(
                                     }
                                 }
                             }
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .height(45.dp)
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
-                                .background(Color.White), // Màu nền khi không nhấn
-                            contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(start = 4.dp, end = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.leastcommonemotion),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 15.sp,
-                                    modifier = Modifier.padding(start = 4.dp, end = 4.dp)
-                                )
-                                if (leastFrequentEmotion.isEmpty()) {
-                                    // Không có cảm xúc nào
+                            Spacer(modifier = Modifier.height(8.dp))
+                            if (monthSize - dayToEmojiMap.size > 5) {
+                                Box(
+                                    modifier = Modifier
+                                        .height(45.dp)
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
+                                        .background(Color.White), // Màu nền khi không nhấn
+                                    contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
+                                ) {
                                     Text(
-                                        text = stringResource(R.string.none),
+                                        text = when (selectedLanguage.value) {
+                                            "vi" -> {
+                                                buildAnnotatedString {
+                                                    append("Bạn chưa ghi nhận cảm xúc trong ")
+                                                    pushStyle(
+                                                        SpanStyle(
+                                                            fontSize = 20.sp,
+                                                            fontWeight = FontWeight.ExtraBold
+                                                        )
+                                                    )
+                                                    append("${monthSize - dayToEmojiMap.size}")
+                                                    pop() // Quay lại kiểu chữ mặc định
+                                                    append(" ngày \uD83D\uDE22")
+                                                }
+                                            }
+
+                                            "en" -> {
+                                                buildAnnotatedString {
+                                                    append("You haven’t recorded your emotions for ")
+                                                    pushStyle(
+                                                        SpanStyle(
+                                                            fontSize = 20.sp,
+                                                            fontWeight = FontWeight.ExtraBold
+                                                        )
+                                                    )
+                                                    append("${monthSize - dayToEmojiMap.size}")
+                                                    pop() // Quay lại kiểu chữ mặc định
+                                                    append(" days \uD83D\uDE22")
+                                                }
+                                            }
+
+                                            else -> { // Mặc định là tiếng Nhật
+                                                buildAnnotatedString {
+                                                    append("あなたは ")
+                                                    pushStyle(
+                                                        SpanStyle(
+                                                            fontSize = 20.sp,
+                                                            fontWeight = FontWeight.ExtraBold
+                                                        )
+                                                    )
+                                                    append("${monthSize - dayToEmojiMap.size}")
+                                                    pop() // Quay lại kiểu chữ mặc định
+                                                    append(" 日間感情を記録していません \uD83D\uDE22")
+                                                }
+                                            }
+                                        },
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontSize = 15.sp,
+                                        modifier = Modifier.padding(start = 4.dp, end = 4.dp)
                                     )
-                                } else {
-                                    val (emotion, count) = leastFrequentEmotion.first() // Lấy phần tử đầu tiên trong danh sách
-                                    Box(
-                                        modifier = Modifier
-                                            .height(40.dp)
-                                            .width(40.dp)
-                                    ) {
-                                        when (emotion) {
-                                            "Happy" -> EmojiItem(
-                                                icon = R.drawable.happy,
-                                                label = "Happy",
-                                                onEmojiClick = {},
-                                                color = Color(0xFFFFFAE6)
-                                            )
-
-                                            "Neutral" -> EmojiItem(
-                                                icon = R.drawable.neutral,
-                                                label = "Neutral",
-                                                onEmojiClick = {},
-                                                color = Color(0xFFEAFBFE)
-                                            )
-
-                                            "Bored" -> EmojiItem(
-                                                icon = R.drawable.bored,
-                                                label = "Bored",
-                                                onEmojiClick = {},
-                                                color = Color(0xFFEDEDED)
-                                            )
-
-                                            "Sad" -> EmojiItem(
-                                                icon = R.drawable.sad,
-                                                label = "Sad",
-                                                onEmojiClick = {},
-                                                color = Color(0xFFB8D1F1)
-                                            )
-
-                                            "Angry" -> EmojiItem(
-                                                icon = R.drawable.angry,
-                                                label = "Angry",
-                                                onEmojiClick = {},
-                                                color = Color(0xFFFFD5CD)
-                                            )
-                                        }
-                                    }
-                                    Text(
-                                        text = "(${count}${stringResource(R.string.days)})",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontSize = 15.sp,
-                                    )
-                                    Spacer(modifier = Modifier.width(5.dp))
                                 }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        if (monthSize - dayToEmojiMap.size > 5) {
-                            Box(
-                                modifier = Modifier
-                                    .height(45.dp)
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
-                                    .background(Color.White), // Màu nền khi không nhấn
-                                contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
-                            ) {
-                                Text(
-                                    text = if (selectedLanguage.value == "ja") {
-                                        buildAnnotatedString {
-                                            append("あなたは ")
-                                            pushStyle(
-                                                SpanStyle(
-                                                    fontSize = 20.sp,
-                                                    fontWeight = FontWeight.ExtraBold
-                                                )
-                                            )
-                                            append("${monthSize - dayToEmojiMap.size}")
-                                            pop() // Quay lại kiểu chữ mặc định
-                                            append(" 日間感情を記録していません \uD83D\uDE22")
-                                        }
-                                    } else {
-                                        buildAnnotatedString {
-                                            append("You haven’t recorded your emotions for ")
-                                            pushStyle(
-                                                SpanStyle(
-                                                    fontSize = 20.sp,
-                                                    fontWeight = FontWeight.ExtraBold
-                                                )
-                                            )
-                                            append("${monthSize - dayToEmojiMap.size}")
-                                            pop() // Quay lại kiểu chữ mặc định
-                                            append(" days \uD83D\uDE22")
-                                        }
-                                    },
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 15.sp,
-                                    modifier = Modifier.padding(start = 4.dp, end = 4.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .height(45.dp)
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
-                                    .background(Color.White), // Màu nền khi không nhấn
-                                contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.recordemotionnotgood),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 15.sp,
-                                    modifier = Modifier.padding(start = 4.dp, end = 4.dp)
-                                )
-                            }
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .height(45.dp)
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
-                                    .background(Color.White), // Màu nền khi không nhấn
-                                contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.recordemotiongood),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 15.sp,
-                                    modifier = Modifier.padding(start = 4.dp, end = 4.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .height(45.dp)
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
-                                    .background(Color.White), // Màu nền khi không nhấn
-                                contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.recordemotiongood2),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontSize = 15.sp,
-                                    modifier = Modifier.padding(start = 4.dp, end = 4.dp)
-                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .height(45.dp)
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
+                                        .background(Color.White), // Màu nền khi không nhấn
+                                    contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.recordemotionnotgood),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 15.sp,
+                                        modifier = Modifier.padding(start = 4.dp, end = 4.dp)
+                                    )
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .height(45.dp)
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
+                                        .background(Color.White), // Màu nền khi không nhấn
+                                    contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.recordemotiongood),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 15.sp,
+                                        modifier = Modifier.padding(start = 4.dp, end = 4.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .height(45.dp)
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp)) // Đảm bảo hình dạng vuông
+                                        .background(Color.White), // Màu nền khi không nhấn
+                                    contentAlignment = Alignment.Center // Đặt nội dung nằm giữa
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.recordemotiongood2),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontSize = 15.sp,
+                                        modifier = Modifier.padding(start = 4.dp, end = 4.dp)
+                                    )
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.height(45.dp))
