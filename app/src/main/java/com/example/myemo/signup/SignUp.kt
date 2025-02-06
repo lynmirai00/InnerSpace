@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -77,6 +79,7 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
     val context = LocalContext.current // Lấy context
     val preferenceManager = remember { PreferenceManager(context) }
     val backgroundColor = remember { mutableStateOf(Color(preferenceManager.getBackgroundColor())) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -341,59 +344,72 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
 
                                 // Xử lý đăng ký tài khoản
                                 if (!isPasswordSame && !isEmailWrong && !isPasswordTooShort) {
-                                    FirebaseAuth.getInstance()
-                                        .createUserWithEmailAndPassword(email, password)
-                                        .addOnCompleteListener { task ->
-                                            if (task.isSuccessful) {
-                                                val user = FirebaseAuth.getInstance().currentUser
-                                                // Cập nhật displayName
-                                                val profileUpdates =
-                                                    UserProfileChangeRequest.Builder()
-                                                        .setDisplayName(name) // Thiết lập displayName
-                                                        .build()
+                                    if (!isLoading) { // Chặn click khi đang tải
+                                        isLoading = true
+                                        FirebaseAuth.getInstance()
+                                            .createUserWithEmailAndPassword(email, password)
+                                            .addOnCompleteListener { task ->
+                                                if (task.isSuccessful) {
+                                                    val user =
+                                                        FirebaseAuth.getInstance().currentUser
+                                                    // Cập nhật displayName
+                                                    val profileUpdates =
+                                                        UserProfileChangeRequest.Builder()
+                                                            .setDisplayName(name) // Thiết lập displayName
+                                                            .build()
 
-                                                user?.updateProfile(profileUpdates)
-                                                    ?.addOnCompleteListener { updateTask ->
-                                                        if (updateTask.isSuccessful) {
-                                                            // Lưu thông tin người dùng vào Firestore
-                                                            val userData = hashMapOf(
-                                                                "name" to name,
-                                                                "email" to email,
-                                                                // Không cần lưu password vào Firestore vì đã lưu trong Authentication
-                                                            )
-                                                            Firebase.firestore.collection("users")
-                                                                .document(user.uid)
-                                                                .set(userData)
-                                                                .addOnSuccessListener {
-                                                                    // Navigate to main page
-                                                                    onSignUpClick(email)
-                                                                }
-                                                                .addOnFailureListener { e ->
-                                                                    Log.d(
-                                                                        "SignUp",
-                                                                        "Sign Up Failed: ${e.message}"
-                                                                    )
-                                                                }
+                                                    user?.updateProfile(profileUpdates)
+                                                        ?.addOnCompleteListener { updateTask ->
+                                                            if (updateTask.isSuccessful) {
+                                                                // Lưu thông tin người dùng vào Firestore
+                                                                val userData = hashMapOf(
+                                                                    "name" to name,
+                                                                    "email" to email,
+                                                                    // Không cần lưu password vào Firestore vì đã lưu trong Authentication
+                                                                )
+                                                                Firebase.firestore.collection("users")
+                                                                    .document(user.uid)
+                                                                    .set(userData)
+                                                                    .addOnSuccessListener {
+                                                                        // Navigate to main page
+                                                                        onSignUpClick(email)
+                                                                    }
+                                                                    .addOnFailureListener { e ->
+                                                                        Log.d(
+                                                                            "SignUp",
+                                                                            "Sign Up Failed: ${e.message}"
+                                                                        )
+                                                                    }
+                                                            }
+                                                            isLoading = false
                                                         }
-                                                    }
-                                            } else {
-                                                isSignUpFail = true
-                                                Log.d(
-                                                    "SignUpScreen",
-                                                    "Sign Up Failed: ${task.exception?.message}"
-                                                )
+                                                } else {
+                                                    isSignUpFail = true
+                                                    Log.d(
+                                                        "SignUpScreen",
+                                                        "Sign Up Failed: ${task.exception?.message}"
+                                                    )
+                                                }
                                             }
-                                        }
+                                    }
                                 }
                             }
                         },
                     ) {
-                        Text(
-                            text = stringResource(R.string.signup),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color(0xFF99c1ff),
+                                strokeWidth = 3.dp
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(R.string.signup),
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     AnimatedVisibility(isSignUpFail) {

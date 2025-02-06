@@ -54,7 +54,9 @@ fun Login(onLoginClick: (String?) -> Unit, onSignUpClick: () -> Unit) {
     val backgroundColor = remember { mutableStateOf(Color(preferenceManager.getBackgroundColor())) }
     var selectedFlag by remember { mutableStateOf(preferenceManager.getSelectedFlag()) }
     var expanded by remember { mutableStateOf(false) } // Quản lý trạng thái của menu
-    val selectedLanguage = remember { mutableStateOf(preferenceManager.getSelectedLanguage()) } // Ngôn ngữ mặc định là Japanese
+    val selectedLanguage =
+        remember { mutableStateOf(preferenceManager.getSelectedLanguage()) } // Ngôn ngữ mặc định là Japanese
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -160,220 +162,261 @@ fun Login(onLoginClick: (String?) -> Unit, onSignUpClick: () -> Unit) {
                     }
                 }
             }
-
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
+                    .height(550.dp)
                     .clip(RoundedCornerShape(20.dp)) // Đảm bảo hình dạng vuông
-                    .background(Color.White) // Màu nền khi không nhấn
+                    .background(backgroundColor.value) // Màu nền khi không nhấn
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 32.dp),
+                        .offset(y = 90.dp)
+                        .clip(RoundedCornerShape(20.dp)) // Đảm bảo hình dạng vuông
                 ) {
-                    // Header
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 32.dp)
                     ) {
-                        HeaderText(
-                            text = "Sign In to",
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.height(30.dp)) // Tạo khoảng cách với form
+                        // Header
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) {
+                            HeaderText(
+                                text = "Sign In to",
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Inner Space",
+                                fontSize = 30.sp,
+                                style = MaterialTheme.typography.displaySmall,
+                                color = Color.Blue
+                            )
+
+                        }
                         Text(
-                            text = "Inner Space",
-                            fontSize = 30.sp,
-                            style = MaterialTheme.typography.displaySmall,
-                            color = Color.Blue
+                            text = "Embrace your emotions, understand yourself",
+                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Black,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
-
-                    }
-                    Text(
-                        text = "Embrace your emotions, understand yourself",
-                        fontSize = 12.sp,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Black,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Khi người dùng nhấn vào một emoji, cập nhật cảm xúc cho ngày
-                        Box(
-                            modifier = Modifier
-                                .height(40.dp)
-                                .width(40.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            EmojiItem(
-                                icon = R.drawable.happy,
-                                label = "Happy",
-                                onEmojiClick = {},
-                                Color(0xFFFFFAE6)
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .height(40.dp)
-                                .width(40.dp)
-                        ) {
-                            EmojiItem(
-                                icon = R.drawable.neutral,
-                                label = "Neutral",
-                                onEmojiClick = {},
-                                Color(0xFFEAFBFE)
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .height(40.dp)
-                                .width(40.dp)
-                        ) {
-                            EmojiItem(
-                                icon = R.drawable.bored,
-                                label = "Bored",
-                                onEmojiClick = {},
-                                Color(0xFFEDEDED)
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .height(40.dp)
-                                .width(40.dp)
-                        ) {
-                            EmojiItem(
-                                icon = R.drawable.sad,
-                                label = "Sad",
-                                onEmojiClick = {},
-                                Color(0xFFB8D1F1)
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .height(40.dp)
-                                .width(40.dp)
-                        ) {
-                            EmojiItem(
-                                icon = R.drawable.angry,
-                                label = "Angry",
-                                onEmojiClick = {},
-                                Color(0xFFFFD5CD)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Email Field
-                    LoginTextField(
-                        value = email,
-                        onValueChange = setEmail,
-                        labelText = stringResource(R.string.email),
-                        modifier = Modifier
-                            .height(65.dp)
-                            .width(250.dp),
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    AnimatedVisibility(isEmailEmpty) {
-                        Text(
-                            text = stringResource(R.string.emailnotfill),
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Password Field
-                    LoginTextField(
-                        value = password,
-                        onValueChange = setPassword,
-                        labelText = stringResource(R.string.password),
-                        modifier = Modifier
-                            .height(65.dp)
-                            .width(250.dp),
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon = {
-                            val icon = if (passwordVisible) {
-                                painterResource(id = R.drawable.ic_action_visibility_black)
-                            } else {
-                                painterResource(id = R.drawable.ic_action_visibility_off_black)
+                            // Khi người dùng nhấn vào một emoji, cập nhật cảm xúc cho ngày
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .width(40.dp)
+                            ) {
+                                EmojiItem(
+                                    icon = R.drawable.happy,
+                                    label = "Happy",
+                                    onEmojiClick = {},
+                                    Color(0xFFFFFAE6)
+                                )
                             }
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(painter = icon, contentDescription = null)
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .width(40.dp)
+                            ) {
+                                EmojiItem(
+                                    icon = R.drawable.neutral,
+                                    label = "Neutral",
+                                    onEmojiClick = {},
+                                    Color(0xFFEAFBFE)
+                                )
                             }
-                        },
-                        keyboardType = KeyboardType.Password
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    AnimatedVisibility(isPasswordEmpty) {
-                        Text(
-                            text = stringResource(R.string.passwordnotfill),
-                            color = MaterialTheme.colorScheme.error,
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .width(40.dp)
+                            ) {
+                                EmojiItem(
+                                    icon = R.drawable.bored,
+                                    label = "Bored",
+                                    onEmojiClick = {},
+                                    Color(0xFFEDEDED)
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .width(40.dp)
+                            ) {
+                                EmojiItem(
+                                    icon = R.drawable.sad,
+                                    label = "Sad",
+                                    onEmojiClick = {},
+                                    Color(0xFFB8D1F1)
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .width(40.dp)
+                            ) {
+                                EmojiItem(
+                                    icon = R.drawable.angry,
+                                    label = "Angry",
+                                    onEmojiClick = {},
+                                    Color(0xFFFFD5CD)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // Email Field
+                        LoginTextField(
+                            value = email,
+                            onValueChange = setEmail,
+                            labelText = stringResource(R.string.email),
+                            modifier = Modifier
+                                .height(65.dp)
+                                .width(250.dp),
                         )
-                    }
-                    Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        AnimatedVisibility(isEmailEmpty) {
+                            Text(
+                                text = stringResource(R.string.emailnotfill),
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                    // Login Button
-                    Button(
-                        modifier = Modifier
-                            .height(50.dp)
-                            .width(250.dp)
-                            .clip(RoundedCornerShape(20.dp)) // Bo góc trước khi thiết lập viền
-                            .border(
-                                1.dp,
-                                Color(0xFF99c1ff),
-                                RoundedCornerShape(20.dp)
-                            ), // Viền màu đen với bo góc 20dp
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White // Nền trắng của button
-                        ),
-                        onClick = {
-                            // Kiểm tra các trường email và password
-                            isEmailEmpty = email.isEmpty()
-                            isPasswordEmpty = password.isEmpty()
+                        // Password Field
+                        LoginTextField(
+                            value = password,
+                            onValueChange = setPassword,
+                            labelText = stringResource(R.string.password),
+                            modifier = Modifier
+                                .height(65.dp)
+                                .width(250.dp),
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                val icon = if (passwordVisible) {
+                                    painterResource(id = R.drawable.ic_action_visibility_black)
+                                } else {
+                                    painterResource(id = R.drawable.ic_action_visibility_off_black)
+                                }
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(painter = icon, contentDescription = null)
+                                }
+                            },
+                            keyboardType = KeyboardType.Password
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        AnimatedVisibility(isPasswordEmpty) {
+                            Text(
+                                text = stringResource(R.string.passwordnotfill),
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                            // Xử lý đăng nhập tại đây
-                            if (isFieldsNotEmpty) {
-                                FirebaseAuth.getInstance()
-                                    .signInWithEmailAndPassword(email, password)
-                                    .addOnCompleteListener { task ->
-                                        if (task.isSuccessful) {
-                                            // Đăng nhập thành công
-                                            val user = FirebaseAuth.getInstance().currentUser
-                                            user?.let {
-                                                Log.d(
-                                                    "LoginScreen",
-                                                    "User: ${it.displayName}, ${it.email}"
-                                                )
-                                                onLoginClick(it.email)
+                        // Login Button
+                        Button(
+                            modifier = Modifier
+                                .height(50.dp)
+                                .width(250.dp)
+                                .clip(RoundedCornerShape(20.dp)) // Bo góc trước khi thiết lập viền
+                                .border(
+                                    1.dp,
+                                    Color(0xFF99c1ff),
+                                    RoundedCornerShape(20.dp)
+                                ), // Viền màu đen với bo góc 20dp
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White, // Nền trắng của button
+                                disabledContainerColor = Color.White // Đảm bảo màu không đổi khi bị vô hiệu hóa
+                            ),
+                            onClick = {
+                                // Kiểm tra các trường email và password
+                                isEmailEmpty = email.isEmpty()
+                                isPasswordEmpty = password.isEmpty()
+
+                                // Xử lý đăng nhập tại đây
+                                if (isFieldsNotEmpty) {
+                                    if (!isLoading) { // Chặn click khi đang tải
+                                        isLoading = true // Bắt đầu loading
+                                        FirebaseAuth.getInstance()
+                                            .signInWithEmailAndPassword(email, password)
+                                            .addOnCompleteListener { task ->
+                                                if (task.isSuccessful) {
+                                                    // Đăng nhập thành công
+                                                    val user =
+                                                        FirebaseAuth.getInstance().currentUser
+                                                    user?.let {
+                                                        Log.d(
+                                                            "LoginScreen",
+                                                            "User: ${it.displayName}, ${it.email}"
+                                                        )
+                                                        onLoginClick(it.email)
+                                                    }
+                                                } else {
+                                                    isLoginFail = true
+                                                    Log.d(
+                                                        "SignInScreen",
+                                                        "Sign In Failed: ${task.exception?.message}"
+                                                    )
+                                                }
+                                                isLoading = false // Dừng loading khi hoàn tất
                                             }
-                                        } else {
-                                            isLoginFail = true
-                                            Log.d(
-                                                "SignInScreen",
-                                                "Sign In Failed: ${task.exception?.message}"
-                                            )
-                                        }
                                     }
+                                }
+                            },
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = Color(0xFF99c1ff),
+                                    strokeWidth = 3.dp
+                                )
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.login),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontSize = 20.sp,
+                                    color = Color.Black
+                                )
                             }
-                        },
-                    ) {
-                        Text(
-                            text = stringResource(R.string.login),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontSize = 20.sp,
-                            color = Color.Black
-                        )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        AnimatedVisibility(isLoginFail) {
+                            Text(
+                                text = stringResource(R.string.loginfail),
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    AnimatedVisibility(isLoginFail) {
-                        Text(
-                            text = stringResource(R.string.loginfail),
-                            color = MaterialTheme.colorScheme.error,
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(150.dp)
+                            .clip(CircleShape)
+                            .background(Color.White, shape = CircleShape)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.logo),
+                            contentDescription = "Logo",
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .align(Alignment.Center) // Đảm bảo ảnh nằm giữa Box
                         )
                     }
                 }

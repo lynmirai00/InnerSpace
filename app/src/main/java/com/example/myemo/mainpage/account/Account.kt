@@ -68,6 +68,7 @@ fun Account(
     val currentUser = FirebaseAuth.getInstance().currentUser
     var showChangeNameDialog by remember { mutableStateOf(false) }
     var showReminderTimeDialog by remember { mutableStateOf(false) }
+    var isUpdatingName by remember { mutableStateOf(false) } // Trạng thái loading
 
     // Ở phần UI chính, tạo SnackbarHostState và CoroutineScope
     val snackbarHostState = remember { SnackbarHostState() }
@@ -253,6 +254,7 @@ fun Account(
                 }
                 if (showChangeNameDialog) {
                     ChangeNameDialog(
+                        isLoading = isUpdatingName, // Truyền trạng thái loading vào,
                         onConfirm = { newName ->
                             // Lấy người dùng hiện tại
                             val user = FirebaseAuth.getInstance().currentUser
@@ -262,6 +264,8 @@ fun Account(
 
                                 // Cập nhật tên trong bảng users với userId
                                 val userRef = db.collection("users").document(userId)
+                                // Bắt đầu loading
+                                isUpdatingName = true
 
                                 // Cập nhật Firestore
                                 userRef.update("name", newName)
@@ -291,10 +295,12 @@ fun Account(
                                                         task.exception
                                                     )
                                                 }
+                                                isUpdatingName = false // Kết thúc loading
                                             }
                                     }
                                     .addOnFailureListener { e ->
                                         Log.e("ChangeName", "Error updating user name", e)
+                                        isUpdatingName = false // Kết thúc loading
                                     }
                             }
                         },

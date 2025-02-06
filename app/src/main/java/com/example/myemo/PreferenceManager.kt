@@ -28,6 +28,11 @@ class PreferenceManager(context: Context) {
         return sharedPreferences.getString("avatar_uri_$userId", DEFAULT_AVATAR_URI) ?: DEFAULT_AVATAR_URI
     }
 
+    // Xóa avatar của user khỏi SharedPreferences
+    fun clearAvatarUri(userId: String) {
+        sharedPreferences.edit().remove("avatar_uri_$userId").apply()
+    }
+
     // Lưu màu nền
     fun saveBackgroundColor(color: Int) {
         sharedPreferences.edit().putInt(KEY_BACKGROUND_COLOR, color).apply()
@@ -51,6 +56,11 @@ class PreferenceManager(context: Context) {
     // Lưu ngôn ngữ đã chọn
     fun saveSelectedLanguage(language: String) {
         sharedPreferences.edit().putString(KEY_LANGUAGE, language).apply()
+    }
+
+    // Xóa thời gian nhắc nhở của user khỏi SharedPreferences
+    fun clearReminderTime(userId: String) {
+        sharedPreferences.edit().remove("reminder_time_$userId").apply()
     }
 
     // Lấy ngôn ngữ đã chọn

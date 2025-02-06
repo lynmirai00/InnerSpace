@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +33,7 @@ import com.example.myemo.components.LoginTextField
 
 @Composable
 fun ChangeNameDialog(
+    isLoading: Boolean, // Truyền trạng thái loading từ bên ngoài
     onConfirm: (String) -> Unit, // Tham số cho mật khẩu cũ, mới, và xác nhận mật khẩu
     onDismiss: () -> Unit
 ) {
@@ -38,7 +41,7 @@ fun ChangeNameDialog(
     var isNewNameEmpty by remember { mutableStateOf(false) }
 
     AlertDialog(
-        onDismissRequest = { onDismiss() },
+        onDismissRequest = { if (!isLoading) onDismiss() },
         title = { Text(text = stringResource(R.string.changename)) },
         text = {
             Column(
@@ -79,7 +82,14 @@ fun ChangeNameDialog(
                     }
                 }
             ) {
-                Text("OK")
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White
+                    )
+                } else {
+                    Text("OK")
+                }
             }
         },
         dismissButton = {
@@ -87,7 +97,7 @@ fun ChangeNameDialog(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFd1e9f6) // Nền trắng của button
                 ),
-                onClick = { onDismiss() }
+                onClick = { if (!isLoading) onDismiss() }
             ) {
                 Text("Cancel", color = MaterialTheme.colorScheme.primary)
             }

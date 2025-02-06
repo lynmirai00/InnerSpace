@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,7 +53,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChangePasswordDialog(
     onConfirm: (String) -> Unit, // Tham số cho mật khẩu cũ, mới, và xác nhận mật khẩu
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    isLoading: Boolean // Thêm tham số isLoading
 ) {
     var oldPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -59,14 +62,15 @@ fun ChangePasswordDialog(
     var isOldPasswordEmpty by remember { mutableStateOf(false) }
     var isNewPasswordEmpty by remember { mutableStateOf(false) }
     var isConfirmPasswordEmpty by remember { mutableStateOf(false) }
-    val isFieldsNotEmpty = oldPassword.isNotEmpty() && newPassword.isNotEmpty() && confirmPassword.isNotEmpty()
+    val isFieldsNotEmpty =
+        oldPassword.isNotEmpty() && newPassword.isNotEmpty() && confirmPassword.isNotEmpty()
     var isPasswordTooShort by remember { mutableStateOf(false) }
     var isPasswordSame by remember { mutableStateOf(false) }
     var isOldPasswordWrong by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
 
     AlertDialog(
-        onDismissRequest = { onDismiss() },
+        onDismissRequest = { if (!isLoading) onDismiss() },
         title = { Text(text = stringResource(R.string.changepassword)) },
         text = {
             Column(
@@ -230,7 +234,14 @@ fun ChangePasswordDialog(
                     }
                 }
             ) {
-                Text("OK")
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White
+                    )
+                } else {
+                    Text("OK")
+                }
             }
         },
         dismissButton = {
@@ -238,7 +249,7 @@ fun ChangePasswordDialog(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFd1e9f6) // Nền trắng của button
                 ),
-                onClick = { onDismiss() }
+                onClick = { if (!isLoading) onDismiss() }
             ) {
                 Text("Cancel", color = MaterialTheme.colorScheme.primary)
             }
@@ -250,6 +261,7 @@ fun ChangePasswordDialog(
 @Composable
 fun ChangePasswordButton(snackbarHostState: SnackbarHostState, scope: CoroutineScope) {
     var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var isUpdatingPassword by remember { mutableStateOf(false) } // Thêm biến trạng thái loading
     val passwordUpdatedMessage = stringResource(R.string.passwordupdated)
 
     // Nút đổi mật khẩu
@@ -263,7 +275,9 @@ fun ChangePasswordButton(snackbarHostState: SnackbarHostState, scope: CoroutineS
             .clickable(onClick = { showChangePasswordDialog = true }) // Xử lý sự kiện nhấn
     ) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(start = 20.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 20.dp),
             verticalAlignment = Alignment.CenterVertically, // Căn giữa theo chiều dọc
             horizontalArrangement = Arrangement.Start // Căn chỉnh về bên trái
         ) {
@@ -278,6 +292,8 @@ fun ChangePasswordButton(snackbarHostState: SnackbarHostState, scope: CoroutineS
     if (showChangePasswordDialog) {
         ChangePasswordDialog(
             onConfirm = { newPassword ->
+                // Bắt đầu loading
+                isUpdatingPassword = true
                 // Thực hiện kiểm tra mật khẩu mới
                 val user = FirebaseAuth.getInstance().currentUser
                 // Đổi mật khẩu
@@ -291,11 +307,18 @@ fun ChangePasswordButton(snackbarHostState: SnackbarHostState, scope: CoroutineS
                             }
                             showChangePasswordDialog = false
                         } else {
-                            Log.e("ChangePassword", "Failed to update password", updateTask.exception)
+                            Log.e(
+                                "ChangePassword",
+                                "Failed to update password",
+                                updateTask.exception
+                            )
                         }
+                        // Kết thúc loading
+                        isUpdatingPassword = false
                     }
             },
-            onDismiss = { showChangePasswordDialog = false }
+            onDismiss = { showChangePasswordDialog = false },
+            isLoading = isUpdatingPassword
         )
     }
 }

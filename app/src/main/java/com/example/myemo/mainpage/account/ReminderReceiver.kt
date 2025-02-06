@@ -30,7 +30,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val notification = NotificationCompat.Builder(context, channelId)
             .setContentTitle("リマインダー")
             .setContentText("今日はどんな一日でしたか？少し時間を取って、あなたの気持ちを記録してみましょう！😊")
-            .setSmallIcon(R.drawable.user)
+            .setSmallIcon(R.drawable.i)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()
