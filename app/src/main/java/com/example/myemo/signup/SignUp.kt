@@ -426,7 +426,9 @@ fun SignUp(onSignUpClick: (String?) -> Unit, onLoginClick: () -> Unit) {
                     text = stringResource(R.string.haveaccount),
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
-                TextButton(onClick = onLoginClick) {
+                TextButton(
+                    onClick = onLoginClick
+                ) {
                     Text(text = stringResource(R.string.signin))
                 }
             }
